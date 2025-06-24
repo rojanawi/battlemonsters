@@ -3,7 +3,6 @@ import { useGame } from '../context/GameContext';
 import { CombatActionSelector } from './ui/CombatActionSelector';
 import { CombatPhaseDisplay } from './ui/CombatPhaseDisplay';
 import { CombatLog } from './ui/CombatLog';
-import { CombatStats } from './ui/CombatStats';
 import { VictoryScreen } from './ui/VictoryScreen';
 import { CombatHeader } from './ui/CombatHeader';
 import { 
@@ -390,8 +389,8 @@ export function TurnBasedCombat() {
           </div>
         </div>
 
-        {/* Second Row: Actions/Reactions Lists */}
-        <div className="grid grid-cols-2 gap-6">
+        {/* Second Row: Actions Only */}
+        <div className="grid grid-cols-1 gap-6">
           {/* Player Actions */}
           <div>
             <h3 className="text-lg font-semibold text-white mb-4">Your Actions</h3>
@@ -400,27 +399,6 @@ export function TurnBasedCombat() {
               onActionSelect={handlePlayerAction}
               disabled={isProcessing || combatState.is_battle_ended}
             />
-          </div>
-
-          {/* Opponent Actions Preview */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Opponent Actions</h3>
-            <div className="bg-gray-900/50 backdrop-blur-sm p-4 rounded-xl border border-red-500/20">
-              {combatState.opponent_declared_action ? (
-                <div className="p-3 bg-red-900/30 border border-red-500/30 rounded-lg">
-                  <h4 className="font-semibold text-red-200 mb-2">{combatState.opponent_declared_action.name}</h4>
-                  <p className="text-red-300 text-sm mb-2">{combatState.opponent_declared_action.description}</p>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-orange-400">{combatState.opponent_declared_action.damage} DMG</span>
-                    <span className="text-green-400">{combatState.opponent_declared_action.energy_cost} Energy</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center text-gray-400 py-8">
-                  <p className="text-sm">Opponent actions will appear here when they act</p>
-                </div>
-              )}
-            </div>
           </div>
         </div>
 

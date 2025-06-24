@@ -155,16 +155,6 @@ export function CombatActionSelector({ combatState, onActionSelect, disabled }: 
       <div className="text-center mb-6">
         <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>
         <p className="text-purple-200">{subtitle}</p>
-        {isReactionPhase && combatState.opponent_declared_action && (
-          <div className="mt-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg">
-            <p className="text-red-200 text-sm">
-              <strong>Opponent's Action:</strong> {combatState.opponent_declared_action.name}
-            </p>
-            <p className="text-red-300 text-xs mt-1">
-              {combatState.opponent_declared_action.description}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Custom Action Input Modal */}

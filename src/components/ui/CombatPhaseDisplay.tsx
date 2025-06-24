@@ -82,8 +82,20 @@ export function CombatPhaseDisplay({ combatState, character, opponent, isProcess
         </div>
       )}
 
-      {/* Current Actions */}
-      {currentPhase.initiator_action && (
+      {/* Opponent Action Display (when reacting) */}
+      {combatState.waiting_for_reaction && combatState.opponent_declared_action && (
+        <div className="mt-3 p-3 bg-red-900/30 border border-red-500/30 rounded-lg">
+          <h4 className="font-semibold text-red-200 text-sm mb-1">
+            {combatState.opponent_declared_action.name}
+          </h4>
+          <p className="text-red-300 text-xs">
+            {combatState.opponent_declared_action.description}
+          </p>
+        </div>
+      )}
+
+      {/* Current Actions Summary */}
+      {currentPhase.initiator_action && !combatState.waiting_for_reaction && (
         <div className="text-xs">
           <p className="text-gray-300 mb-1">
             <strong>{currentPhase.initiator === 'player' ? 'You' : 'Opponent'}:</strong> {currentPhase.initiator_action.name}
