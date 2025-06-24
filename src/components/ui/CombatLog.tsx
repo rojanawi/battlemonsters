@@ -23,13 +23,13 @@ export function CombatLog({ combatLog }: CombatLogProps) {
   };
 
   return (
-    <div className="bg-gray-900/50 backdrop-blur-sm p-6 rounded-xl border border-purple-500/20 h-full">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="bg-gray-900/50 backdrop-blur-sm p-6 rounded-xl border border-purple-500/20 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-4 flex-shrink-0">
         <ScrollText className="w-5 h-5 text-purple-400" />
         <h3 className="text-lg font-semibold text-white">Combat Log</h3>
       </div>
 
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="space-y-4 flex-1 overflow-y-auto">
         {combatLog.length === 0 ? (
           <p className="text-purple-300 text-sm italic">Combat has not yet begun...</p>
         ) : (
