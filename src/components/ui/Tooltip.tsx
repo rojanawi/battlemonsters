@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 
 interface TooltipProps {
   content: string | React.ReactNode;
@@ -37,27 +37,27 @@ export function Tooltip({
 
   const getTooltipStyles = () => {
     const baseStyles = {
-      left: `${mousePosition.x + 10}px`, // 10px offset from cursor
-      top: `${mousePosition.y - 10}px`,  // 10px above cursor
+      left: `${mousePosition.x}px`,
+      top: `${mousePosition.y + 15}px`, // 15px below cursor
     };
 
     if (imagePreview) {
       return {
         ...baseStyles,
-        width: '320px', // Fixed 320px for image previews
+        width: '320px',
         maxWidth: 'none'
       };
     }
     if (wide) {
       return {
         ...baseStyles,
-        width: '300px', // Fixed 300px for wide tooltips
+        width: '300px',
         maxWidth: 'none'
       };
     }
     return {
       ...baseStyles,
-      width: '300px', // Default 300px width
+      width: '300px',
       maxWidth: 'none'
     };
   };
