@@ -203,11 +203,36 @@ export function CombatActionSelector({ combatState, onActionSelect, disabled }: 
           const canAfford = canAffordAction(action);
           const isDisabled = disabled || !canAfford;
 
+          const tooltipContent = (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-white">{action.name}</h4>
+              <p className="text-gray-200 leading-relaxed">{action.description}</p>
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-600/30">
+                <div>
+                  <span className="text-orange-300 font-medium">{action.damage} Damage</span>
+                  <br />
+                  <span className={`text-sm ${!canAfford ? 'text-red-400' : 'text-green-400'}`}>
+                    {action.energy_cost} Energy
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-purple-300 text-sm">{getActionTypeLabel(action.type)}</span>
+                  {action.strengths.length > 0 && (
+                    <div className="mt-1">
+                      <span className="text-green-400 text-xs">Strong vs: {action.strengths.join(', ')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+
           return (
             <Tooltip
               key={action.id}
-              content={action.description}
+              content={tooltipContent}
               position="top"
+              wide={true}
             >
               <button
                 onClick={() => handleActionClick(action)}
@@ -261,8 +286,9 @@ export function CombatActionSelector({ combatState, onActionSelect, disabled }: 
       {customInputAction && !showCustomInput && (
         <div className="w-full">
           <Tooltip
-            content={customInputAction.description}
+            content="Create your own unique action by describing what you want to do!"
             position="top"
+            wide={true}
           >
             <button
               onClick={() => handleActionClick(customInputAction)}

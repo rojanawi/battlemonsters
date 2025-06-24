@@ -1,13 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 interface TooltipProps {
-  content: string;
+  content: string | React.ReactNode;
   children: React.ReactNode;
   position?: 'top' | 'bottom' | 'left' | 'right';
   className?: string;
+  wide?: boolean;
+  imagePreview?: string;
 }
 
-export function Tooltip({ content, children, position = 'top', className = '' }: TooltipProps) {
+export function Tooltip({ 
+  content, 
+  children, 
+  position = 'top', 
+  className = '', 
+  wide = false,
+  imagePreview 
+}: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -52,6 +61,12 @@ export function Tooltip({ content, children, position = 'top', className = '' }:
     }
   }, [isVisible, position]);
 
+  const getTooltipWidth = () => {
+    if (imagePreview) return 'w-80'; // Large for image previews
+    if (wide) return 'max-w-md'; // Wider for detailed text
+    return 'max-w-xs'; // Default width
+  };
+
   return (
     <div className="relative">
       <div
@@ -66,7 +81,7 @@ export function Tooltip({ content, children, position = 'top', className = '' }:
       {isVisible && (
         <div
           ref={tooltipRef}
-          className="absolute z-50 px-3 py-2 text-sm text-white bg-gray-900 border border-gray-600 rounded-lg shadow-lg max-w-xs pointer-events-none"
+          className={`absolute z-50 px-4 py-3 text-sm text-white bg-gray-900/95 backdrop-blur-sm border border-gray-600/50 rounded-lg shadow-xl pointer-events-none ${getTooltipWidth()}`}
           style={{
             left: '50%',
             bottom: '100%',
@@ -74,8 +89,31 @@ export function Tooltip({ content, children, position = 'top', className = '' }:
             marginBottom: '8px',
           }}
         >
-          {content}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 border-gray-600 rotate-45 border-r border-b" />
+          {imagePreview ? (
+            <div className="space-y-3">
+              <div className="w-full h-48 rounded-lg overflow-hidden bg-gray-800/50">
+                <img
+                  src={imagePreview}
+                  alt="Action preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {typeof content === 'string' ? (
+                <p className="text-center text-gray-200">{content}</p>
+              ) : (
+                content
+              )}
+            </div>
+          ) : (
+            <div className="leading-relaxed">
+              {typeof content === 'string' ? (
+                <p>{content}</p>
+              ) : (
+                content
+              )}
+            </div>
+          )}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900/95 border-gray-600/50 rotate-45 border-r border-b" />
         </div>
       )}
     </div>

@@ -100,8 +100,19 @@ export function BattleActionButton({ action, index, disabled, onClick }: BattleA
     }
   };
 
+  const tooltipContent = (
+    <div className="space-y-2">
+      <h4 className="font-semibold text-white">{action.name}</h4>
+      <p className="text-gray-200">{action.description}</p>
+      <div className="flex justify-between items-center pt-2 border-t border-gray-600/30">
+        <span className="text-orange-300 font-medium">{action.attack_points} Damage</span>
+        <span className="text-purple-300 text-sm">{getTypeLabel(action.type)} Action</span>
+      </div>
+    </div>
+  );
+
   return (
-    <Tooltip content={action.description} position="top">
+    <Tooltip content={tooltipContent} position="top" wide={true}>
       <button
         onClick={() => onClick(index)}
         disabled={disabled}

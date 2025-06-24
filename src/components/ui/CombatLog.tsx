@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollText, Sword, Shield, Sparkles, RotateCcw, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
+import { Tooltip } from './Tooltip';
 import type { CombatPhase } from '../../types/combat';
 
 interface CombatLogProps {
@@ -150,8 +151,8 @@ Visual style: Dynamic combat action scene, ${actingCharacter.character_name} in 
 
     console.log(`Rendering action image for ${imageKey}:`, imageData);
 
-    return (
-      <div className="w-16 h-9 rounded overflow-hidden bg-gray-800/50 flex-shrink-0 border border-gray-600/30">
+    const imageElement = (
+      <div className="w-16 h-9 rounded overflow-hidden bg-gray-800/50 flex-shrink-0 border border-gray-600/30 cursor-pointer hover:border-purple-500/50 transition-colors">
         {!imageData ? (
           <div className="w-full h-full flex items-center justify-center">
             <div className="w-3 h-3 bg-gray-600 rounded"></div>
@@ -184,6 +185,42 @@ Visual style: Dynamic combat action scene, ${actingCharacter.character_name} in 
           </div>
         )}
       </div>
+    );
+
+    // Wrap with tooltip for image preview if image is available
+    if (imageData?.url) {
+      const tooltipContent = (
+        <div className="space-y-2">
+          <h4 className="font-semibold text-white">{action.name}</h4>
+          <p className="text-gray-200 text-sm">{action.description}</p>
+          <p className="text-purple-300 text-xs">
+            {phase.initiator === 'player' && actionType === 'initiator' ? 'You performed this action' :
+             phase.initiator === 'opponent' && actionType === 'reactor' ? 'You performed this action' :
+             'Opponent performed this action'}
+          </p>
+        </div>
+      );
+
+      return (
+        <Tooltip
+          content={tooltipContent}
+          imagePreview={imageData.url}
+          position="top"
+        >
+          {imageElement}
+        </Tooltip>
+      );
+    }
+
+    // Regular tooltip for non-image elements
+    return (
+      <Tooltip
+        content={action.description}
+        position="top"
+        wide={true}
+      >
+        {imageElement}
+      </Tooltip>
     );
   };
 
