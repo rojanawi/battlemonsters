@@ -36,9 +36,11 @@ export function Tooltip({
   };
 
   const getTooltipStyles = () => {
+    // Position tooltip directly below the mouse cursor
     const baseStyles = {
       left: `${mousePosition.x}px`,
-      top: `${mousePosition.y + 15}px`, // 15px below cursor
+      top: `${mousePosition.y + 10}px`, // Just 10px below cursor
+      transform: 'translateX(-50%)', // Center horizontally on cursor
     };
 
     if (imagePreview) {
