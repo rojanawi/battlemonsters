@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollText, Sword, Shield, Sparkles, RotateCcw, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { useGame } from '../../context/GameContext';
 import type { CombatPhase } from '../../types/combat';
 
 interface CombatLogProps {
@@ -13,6 +14,8 @@ interface ActionImage {
 }
 
 export function CombatLog({ combatLog }: CombatLogProps) {
+  const { state } = useGame();
+  const { character, opponent } = state;
   const [actionImages, setActionImages] = useState<Record<string, ActionImage>>({});
 
   const getActionIcon = (type: string) => {
@@ -30,7 +33,9 @@ export function CombatLog({ combatLog }: CombatLogProps) {
     }
   };
 
-  const generateActionImage = async (phaseIndex: number, action: any, actionType: 'initiator' | 'reactor') => {
+  const generateActionImage = async (phaseIndex: number, action: any, actionType: 'initiator' | 'reactor', phase: CombatPhase) => {
+    if (!character || !opponent) return;
+    
     const imageKey = `${phaseIndex}-${actionType}`;
     
     // Don't generate if already generating or exists
@@ -46,11 +51,21 @@ export function CombatLog({ combatLog }: CombatLogProps) {
     }));
 
     try {
-      const prompt = `Epic fantasy combat action illustration: ${action.name} - ${action.description}. 
+      // Determine who is performing the action
+      const isPlayerAction = (phase.initiator === 'player' && actionType === 'initiator') || 
+                            (phase.initiator === 'opponent' && actionType === 'reactor');
       
-      Dynamic action scene showing the combat move in progress, magical effects and energy, dramatic lighting with sparks and particles, intense battle atmosphere, fantasy art style, high contrast, detailed character action pose, combat magic effects, cinematic composition, 16:9 aspect ratio.`;
+      const actingCharacter = isPlayerAction ? character : opponent;
+      const targetCharacter = isPlayerAction ? opponent : character;
 
-      console.log(`Making API call for image generation with prompt: ${prompt}`);
+      // Enhanced prompt with character consistency like BattleStoryScreen
+      const prompt = `Epic fantasy combat action: ${actingCharacter.character_name} (${actingCharacter.image_prompt}) performing ${action.name} against ${targetCharacter.character_name} (${targetCharacter.image_prompt}).
+
+Action: ${action.description}. The attacker shows ${actingCharacter.description} while the target displays ${targetCharacter.description}.
+
+Visual style: Dynamic combat action scene, ${actingCharacter.character_name} in the foreground executing the move, magical effects and energy corresponding to the action, dramatic lighting with sparks and energy trails, intense battle atmosphere, detailed character aesthetics matching their descriptions, cinematic action photography, high contrast lighting, fantasy combat art style, 16:9 aspect ratio.`;
+
+      console.log(`Making API call for image generation with enhanced prompt: ${prompt}`);
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/character-image`,
@@ -96,17 +111,19 @@ export function CombatLog({ combatLog }: CombatLogProps) {
     }
   };
 
-  const retryImageGeneration = (phaseIndex: number, action: any, actionType: 'initiator' | 'reactor') => {
+  const retryImageGeneration = (phaseIndex: number, action: any, actionType: 'initiator' | 'reactor', phase: CombatPhase) => {
     const imageKey = `${phaseIndex}-${actionType}`;
     setActionImages(prev => ({
       ...prev,
       [imageKey]: { isGenerating: false, error: false }
     }));
-    generateActionImage(phaseIndex, action, actionType);
+    generateActionImage(phaseIndex, action, actionType, phase);
   };
 
   // Generate images for new combat log entries
   useEffect(() => {
+    if (!character || !opponent) return;
+    
     console.log('Combat log updated, checking for new actions to generate images for:', combatLog);
     
     combatLog.forEach((phase, index) => {
@@ -114,20 +131,20 @@ export function CombatLog({ combatLog }: CombatLogProps) {
         const imageKey = `${index}-initiator`;
         if (!actionImages[imageKey]) {
           console.log(`Triggering image generation for initiator action: ${phase.initiator_action.name}`);
-          generateActionImage(index, phase.initiator_action, 'initiator');
+          generateActionImage(index, phase.initiator_action, 'initiator', phase);
         }
       }
       if (phase.reactor_action) {
         const imageKey = `${index}-reactor`;
         if (!actionImages[imageKey]) {
           console.log(`Triggering image generation for reactor action: ${phase.reactor_action.name}`);
-          generateActionImage(index, phase.reactor_action, 'reactor');
+          generateActionImage(index, phase.reactor_action, 'reactor', phase);
         }
       }
     });
-  }, [combatLog.length]); // Only trigger when combat log length changes
+  }, [combatLog.length, character, opponent]); // Include character and opponent in dependencies
 
-  const renderActionImage = (phaseIndex: number, action: any, actionType: 'initiator' | 'reactor') => {
+  const renderActionImage = (phaseIndex: number, action: any, actionType: 'initiator' | 'reactor', phase: CombatPhase) => {
     const imageKey = `${phaseIndex}-${actionType}`;
     const imageData = actionImages[imageKey];
 
@@ -146,7 +163,7 @@ export function CombatLog({ combatLog }: CombatLogProps) {
         ) : imageData.error ? (
           <div className="w-full h-full flex items-center justify-center">
             <button
-              onClick={() => retryImageGeneration(phaseIndex, action, actionType)}
+              onClick={() => retryImageGeneration(phaseIndex, action, actionType, phase)}
               className="w-full h-full flex items-center justify-center hover:bg-gray-700/50 transition-colors"
               title="Retry image generation"
             >
@@ -192,7 +209,7 @@ export function CombatLog({ combatLog }: CombatLogProps) {
               {phase.initiator_action && (
                 <div className="mb-2">
                   <div className="flex items-center gap-3 mb-1">
-                    {renderActionImage(index, phase.initiator_action, 'initiator')}
+                    {renderActionImage(index, phase.initiator_action, 'initiator', phase)}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         {getActionIcon(phase.initiator_action.type)}
@@ -211,7 +228,7 @@ export function CombatLog({ combatLog }: CombatLogProps) {
               {phase.reactor_action && (
                 <div className="mb-2">
                   <div className="flex items-center gap-3 mb-1">
-                    {renderActionImage(index, phase.reactor_action, 'reactor')}
+                    {renderActionImage(index, phase.reactor_action, 'reactor', phase)}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         {getActionIcon(phase.reactor_action.type)}
