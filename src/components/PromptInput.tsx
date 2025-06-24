@@ -14,7 +14,8 @@ export function PromptInput() {
     dispatch({ type: 'SET_LOADING', payload: true });
     
     try {
-      const response = await fetch(
+      // Step 1: Create the character
+      const characterResponse = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/character-creation`,
         {
           method: 'POST',
@@ -25,13 +26,51 @@ export function PromptInput() {
         }
       );
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (!characterResponse.ok) {
+        const error = await characterResponse.json();
         throw new Error(error.error || 'Failed to create character');
       }
 
-      const character = await response.json();
-      dispatch({ type: 'SET_CHARACTER', payload: character });
+      const character = await characterResponse.json();
+      
+      // Step 2: Generate character image
+      dispatch({ type: 'SET_GENERATING_IMAGE', payload: true });
+      
+      try {
+        const imageResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/character-image`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prompt: character.image_prompt }),
+          }
+        );
+
+        if (!imageResponse.ok) {
+          throw new Error('Failed to generate character image');
+        }
+
+        const imageData = await imageResponse.json();
+        
+        // Set character with image URL
+        const characterWithImage = {
+          ...character,
+          image_url: imageData.url
+        };
+        
+        dispatch({ type: 'SET_CHARACTER', payload: characterWithImage });
+        
+      } catch (imageError) {
+        console.error('Failed to generate character image:', imageError);
+        // Set character without image - user can retry later
+        dispatch({ type: 'SET_CHARACTER', payload: character });
+        dispatch({ type: 'SET_IMAGE_GENERATION_ERROR', payload: true });
+      } finally {
+        dispatch({ type: 'SET_GENERATING_IMAGE', payload: false });
+      }
+      
       setPrompt('');
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });

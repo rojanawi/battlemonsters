@@ -5,39 +5,16 @@ import type { Character, Opponent } from '../../types/game';
 interface CharacterCardProps {
   character: Character | Opponent;
   isPlayer?: boolean;
-  isGeneratingImage?: boolean;
-  imageGenerationError?: boolean;
-  onRetryImageGeneration?: () => void;
 }
 
 export function CharacterCard({ 
   character, 
-  isPlayer = false, 
-  isGeneratingImage = false, 
-  imageGenerationError = false,
-  onRetryImageGeneration 
+  isPlayer = false
 }: CharacterCardProps) {
   return (
     <div className="bg-gray-900/50 backdrop-blur-sm p-6 rounded-xl border border-purple-500/20">
       <div className="relative w-full aspect-square mb-6 rounded-lg overflow-hidden bg-gray-800/50">
-        {isPlayer && isGeneratingImage ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <Loader2 className="w-8 h-8 text-purple-400 animate-spin mb-2" />
-            <p className="text-sm text-purple-300">Generating image...</p>
-          </div>
-        ) : isPlayer && imageGenerationError ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-            <AlertCircle className="w-8 h-8 text-red-400 mb-2" />
-            <p className="text-sm text-red-300 text-center mb-3">Failed to generate image</p>
-            <button
-              onClick={onRetryImageGeneration}
-              className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm rounded-lg transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Retry
-            </button>
-          </div>
-        ) : character.image_url ? (
+        {character.image_url ? (
           <img
             src={character.image_url}
             alt={character.character_name}
