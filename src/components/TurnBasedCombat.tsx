@@ -346,8 +346,8 @@ export function TurnBasedCombat() {
       )}
 
       <div className="container mx-auto px-4 py-6 flex-1 flex flex-col gap-6">
-        {/* First Row: Player, Opponent, Round Info, Combat Rules */}
-        <div className="grid grid-cols-4 gap-6">
+        {/* First Row: Player, Opponent, Round Info */}
+        <div className="grid grid-cols-3 gap-6">
           {/* Player Stats */}
           <div className="bg-gray-900/50 backdrop-blur-sm p-4 rounded-xl border border-blue-500/20">
             <CombatHeader
@@ -374,18 +374,6 @@ export function TurnBasedCombat() {
               opponent={opponent}
               isProcessing={isProcessing}
             />
-          </div>
-
-          {/* Combat Rules */}
-          <div className="bg-gray-900/50 backdrop-blur-sm p-4 rounded-xl border border-purple-500/20">
-            <h4 className="text-white font-semibold mb-3 text-sm">Combat Rules</h4>
-            <ul className="text-xs text-purple-200 space-y-1">
-              <li>• <strong>Player Initiative:</strong> You act first, opponent reacts</li>
-              <li>• <strong>Opponent Initiative:</strong> Opponent acts first, you react</li>
-              <li>• <strong>Actions:</strong> Attack, Defend, Special, Counter</li>
-              <li>• <strong>Strategy:</strong> Choose actions strong against opponent's type</li>
-              <li>• <strong>Energy:</strong> Regenerates +10 each turn</li>
-            </ul>
           </div>
         </div>
 
