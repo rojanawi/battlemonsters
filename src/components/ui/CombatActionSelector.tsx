@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sword, Shield, Sparkles, RotateCcw, Loader2, User, Laugh, Zap, Edit3, Send } from 'lucide-react';
+import { Tooltip } from './Tooltip';
 import type { CombatState, CombatAction } from '../../types/combat';
 
 interface CombatActionSelectorProps {
@@ -208,55 +209,56 @@ export function CombatActionSelector({ combatState, onActionSelect, disabled }: 
           const isDisabled = disabled || !canAfford;
 
           return (
-            <button
+            <Tooltip
               key={action.id}
-              onClick={() => handleActionClick(action)}
-              disabled={isDisabled}
-              className={`p-4 border rounded-lg text-left transition-all duration-200 ${
-                isDisabled 
-                  ? 'border-gray-600/20 bg-gray-800/30 text-gray-500 cursor-not-allowed' 
-                  : getActionColor(action.type)
-              }`}
+              content={action.description}
+              position="top"
             >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  {getActionIcon(action.type)}
-                  <h4 className="font-semibold text-sm">{action.name}</h4>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs px-2 py-1 bg-gray-700/50 rounded mb-1">
-                    {getActionTypeLabel(action.type)}
+              <button
+                onClick={() => handleActionClick(action)}
+                disabled={isDisabled}
+                className={`p-4 border rounded-lg text-left transition-all duration-200 ${
+                  isDisabled 
+                    ? 'border-gray-600/20 bg-gray-800/30 text-gray-500 cursor-not-allowed' 
+                    : getActionColor(action.type)
+                }`}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {getActionIcon(action.type)}
+                    <h4 className="font-semibold text-sm">{action.name}</h4>
                   </div>
-                  {action.type !== 'custom_input' && (
-                    <>
-                      <div className={`text-xs font-bold ${!canAfford ? 'text-red-400' : 'text-green-400'}`}>
-                        {action.energy_cost} Energy
-                      </div>
-                      <div className="text-xs text-orange-400">
-                        {action.damage} DMG
-                      </div>
-                    </>
-                  )}
+                  <div className="text-right">
+                    <div className="text-xs px-2 py-1 bg-gray-700/50 rounded mb-1">
+                      {getActionTypeLabel(action.type)}
+                    </div>
+                    {action.type !== 'custom_input' && (
+                      <>
+                        <div className={`text-xs font-bold ${!canAfford ? 'text-red-400' : 'text-green-400'}`}>
+                          {action.energy_cost} Energy
+                        </div>
+                        <div className="text-xs text-orange-400">
+                          {action.damage} DMG
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-              
-              <p className="text-xs mb-2 opacity-90">
-                {action.description}
-              </p>
-              
-              {action.type !== 'custom_input' && action.strengths.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  <span className="text-xs px-2 py-1 bg-green-900/50 text-green-300 rounded">
-                    Strong vs: {action.strengths.join(', ')}
-                  </span>
-                  {action.weaknesses.length > 0 && (
-                    <span className="text-xs px-2 py-1 bg-red-900/50 text-red-300 rounded">
-                      Weak vs: {action.weaknesses.join(', ')}
+                
+                {action.type !== 'custom_input' && action.strengths.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    <span className="text-xs px-2 py-1 bg-green-900/50 text-green-300 rounded">
+                      Strong vs: {action.strengths.join(', ')}
                     </span>
-                  )}
-                </div>
-              )}
-            </button>
+                    {action.weaknesses.length > 0 && (
+                      <span className="text-xs px-2 py-1 bg-red-900/50 text-red-300 rounded">
+                        Weak vs: {action.weaknesses.join(', ')}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </button>
+            </Tooltip>
           );
         })}
       </div>

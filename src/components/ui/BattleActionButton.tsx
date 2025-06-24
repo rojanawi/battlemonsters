@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sword, Laugh, Sparkles, Wand2 } from 'lucide-react';
+import { Tooltip } from './Tooltip';
 import type { BattleAction } from '../../types/game';
 
 interface BattleActionButtonProps {
@@ -100,36 +101,35 @@ export function BattleActionButton({ action, index, disabled, onClick }: BattleA
   };
 
   return (
-    <button
-      onClick={() => onClick(index)}
-      disabled={disabled}
-      className={`w-full p-4 border rounded-lg text-left transition-all duration-200 ${
-        getActionBg(action.type)
-      } ${getActionColor(action.type)} ${
-        disabled ? 'cursor-not-allowed' : ''
-      }`}
-    >
-      <div className="flex justify-between items-start mb-2">
-        <div className="flex items-center gap-2">
-          {getActionIcon(action.type)}
-          <h4 className="font-semibold text-sm">
-            {action.name}
-          </h4>
+    <Tooltip content={action.description} position="top">
+      <button
+        onClick={() => onClick(index)}
+        disabled={disabled}
+        className={`w-full p-4 border rounded-lg text-left transition-all duration-200 ${
+          getActionBg(action.type)
+        } ${getActionColor(action.type)} ${
+          disabled ? 'cursor-not-allowed' : ''
+        }`}
+      >
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex items-center gap-2">
+            {getActionIcon(action.type)}
+            <h4 className="font-semibold text-sm">
+              {action.name}
+            </h4>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`text-xs px-2 py-1 rounded ${getTypeBadgeColor(action.type)}`}>
+              {getTypeLabel(action.type)}
+            </span>
+            <span className={`text-xs font-bold ${
+              disabled ? 'text-gray-600' : 'text-red-400'
+            }`}>
+              {action.attack_points} DMG
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`text-xs px-2 py-1 rounded ${getTypeBadgeColor(action.type)}`}>
-            {getTypeLabel(action.type)}
-          </span>
-          <span className={`text-xs font-bold ${
-            disabled ? 'text-gray-600' : 'text-red-400'
-          }`}>
-            {action.attack_points} DMG
-          </span>
-        </div>
-      </div>
-      <p className={`text-xs ${disabled ? 'text-gray-600' : 'text-gray-300'}`}>
-        {action.description}
-      </p>
-    </button>
+      </button>
+    </Tooltip>
   );
 }
