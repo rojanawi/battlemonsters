@@ -150,6 +150,10 @@ export function CombatActionSelector({ combatState, onActionSelect, disabled }: 
     ? 'You have the initiative - your opponent will react to your choice'
     : `React to opponent's ${combatState.opponent_declared_action?.name || 'action'}`;
 
+  // Separate regular actions from custom input action
+  const regularActions = combatState.available_actions.filter(action => action.type !== 'custom_input');
+  const customInputAction = combatState.available_actions.find(action => action.type === 'custom_input');
+
   return (
     <div className="bg-gray-900/50 backdrop-blur-sm p-6 rounded-xl border border-purple-500/20">
       <div className="text-center mb-6">
@@ -193,9 +197,9 @@ export function CombatActionSelector({ combatState, onActionSelect, disabled }: 
         </div>
       )}
 
-      {/* Single Column Layout for Actions */}
-      <div className="space-y-3">
-        {combatState.available_actions.map((action) => {
+      {/* First Row: Top 3 Actions Horizontally */}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        {regularActions.slice(0, 3).map((action) => {
           const canAfford = canAffordAction(action);
           const isDisabled = disabled || !canAfford;
 
@@ -208,36 +212,35 @@ export function CombatActionSelector({ combatState, onActionSelect, disabled }: 
               <button
                 onClick={() => handleActionClick(action)}
                 disabled={isDisabled}
-                className={`w-full p-4 border rounded-lg text-left transition-all duration-200 ${
+                className={`p-4 border rounded-lg text-left transition-all duration-200 ${
                   isDisabled 
                     ? 'border-gray-600/20 bg-gray-800/30 text-gray-500 cursor-not-allowed' 
                     : getActionColor(action.type)
                 }`}
               >
-                <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {getActionIcon(action.type)}
                     <h4 className="font-semibold text-sm">{action.name}</h4>
                   </div>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <div className="text-xs px-2 py-1 bg-gray-700/50 rounded">
+                    {getActionTypeLabel(action.type)}
+                  </div>
                   <div className="text-right">
-                    <div className="text-xs px-2 py-1 bg-gray-700/50 rounded mb-1">
-                      {getActionTypeLabel(action.type)}
+                    <div className={`text-xs font-bold ${!canAfford ? 'text-red-400' : 'text-green-400'}`}>
+                      {action.energy_cost} Energy
                     </div>
-                    {action.type !== 'custom_input' && (
-                      <>
-                        <div className={`text-xs font-bold ${!canAfford ? 'text-red-400' : 'text-green-400'}`}>
-                          {action.energy_cost} Energy
-                        </div>
-                        <div className="text-xs text-orange-400">
-                          {action.damage} DMG
-                        </div>
-                      </>
-                    )}
+                    <div className="text-xs text-orange-400">
+                      {action.damage} DMG
+                    </div>
                   </div>
                 </div>
                 
-                {action.type !== 'custom_input' && action.strengths.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
+                {action.strengths.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
                     <span className="text-xs px-2 py-1 bg-green-900/50 text-green-300 rounded">
                       Strong vs: {action.strengths.join(', ')}
                     </span>
@@ -253,6 +256,36 @@ export function CombatActionSelector({ combatState, onActionSelect, disabled }: 
           );
         })}
       </div>
+
+      {/* Second Row: Custom Action (Full Width) */}
+      {customInputAction && !showCustomInput && (
+        <div className="w-full">
+          <Tooltip
+            content={customInputAction.description}
+            position="top"
+          >
+            <button
+              onClick={() => handleActionClick(customInputAction)}
+              disabled={disabled}
+              className={`w-full p-4 border rounded-lg text-left transition-all duration-200 ${
+                disabled 
+                  ? 'border-gray-600/20 bg-gray-800/30 text-gray-500 cursor-not-allowed' 
+                  : getActionColor(customInputAction.type)
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {getActionIcon(customInputAction.type)}
+                  <h4 className="font-semibold text-sm">{customInputAction.name}</h4>
+                </div>
+                <div className="text-xs px-2 py-1 bg-gray-700/50 rounded">
+                  {getActionTypeLabel(customInputAction.type)}
+                </div>
+              </div>
+            </button>
+          </Tooltip>
+        </div>
+      )}
 
       <div className="mt-4 text-center text-xs text-purple-300">
         Turn {combatState.current_phase.turn_number} • {combatState.current_phase.phase === 'player_initiative' ? 'Player Initiative' : 'Opponent Initiative'}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Heart, Zap, Shield } from 'lucide-react';
+import { Tooltip } from './Tooltip';
 import type { CombatState, Character, Opponent } from '../../types/combat';
 
 interface CombatHeaderProps {
@@ -59,13 +60,15 @@ export function CombatHeader({ character, combatState, isPlayer }: CombatHeaderP
         </div>
       </div>
 
-      {/* Energy Bar */}
+      {/* Energy Bar with Tooltip */}
       <div>
         <div className="flex justify-between text-xs text-yellow-200 mb-1">
-          <span className="flex items-center gap-1">
-            <Zap className="w-3 h-3" />
-            Energy
-          </span>
+          <Tooltip content="Energy regenerates +10 every turn" position="top">
+            <span className="flex items-center gap-1 cursor-help">
+              <Zap className="w-3 h-3" />
+              Energy
+            </span>
+          </Tooltip>
           <span className="font-mono">{currentEnergy}/{maxEnergy}</span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-2">
