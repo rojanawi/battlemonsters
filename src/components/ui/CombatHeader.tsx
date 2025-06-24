@@ -18,11 +18,26 @@ export function CombatHeader({ character, combatState, isPlayer }: CombatHeaderP
   const hpPercentage = (currentHp / maxHp) * 100;
   const energyPercentage = (currentEnergy / maxEnergy) * 100;
 
+  const energyTooltipContent = (
+    <div className="space-y-2">
+      <h4 className="font-semibold text-white">Energy System</h4>
+      <p className="text-gray-200 leading-relaxed">
+        Energy is consumed when performing actions. Each action has a different energy cost.
+      </p>
+      <p className="text-green-400 font-medium">
+        ⚡ Regenerates +10 every turn
+      </p>
+      <p className="text-yellow-300 text-sm">
+        Current: {currentEnergy}/{maxEnergy}
+      </p>
+    </div>
+  );
+
   return (
     <div className="space-y-4">
       {/* Character Portrait and Name */}
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-800/50 flex-shrink-0">
+        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-800/50 flex-shrink-0 aspect-square">
           {character.image_url ? (
             <img
               src={character.image_url}
@@ -60,10 +75,10 @@ export function CombatHeader({ character, combatState, isPlayer }: CombatHeaderP
         </div>
       </div>
 
-      {/* Energy Bar with Tooltip */}
+      {/* Energy Bar with Enhanced Tooltip */}
       <div>
         <div className="flex justify-between text-xs text-yellow-200 mb-1">
-          <Tooltip content="Energy regenerates +10 every turn" position="top">
+          <Tooltip content={energyTooltipContent} position="top" wide={true}>
             <span className="flex items-center gap-1 cursor-help">
               <Zap className="w-3 h-3" />
               Energy

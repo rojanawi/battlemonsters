@@ -61,10 +61,23 @@ export function Tooltip({
     }
   }, [isVisible, position]);
 
-  const getTooltipWidth = () => {
-    if (imagePreview) return 'w-80'; // Large for image previews
-    if (wide) return 'max-w-md'; // Wider for detailed text
-    return 'max-w-xs'; // Default width
+  const getTooltipStyles = () => {
+    if (imagePreview) {
+      return {
+        width: '320px', // Fixed 320px for image previews
+        maxWidth: 'none'
+      };
+    }
+    if (wide) {
+      return {
+        width: '300px', // Fixed 300px for wide tooltips
+        maxWidth: 'none'
+      };
+    }
+    return {
+      width: '300px', // Default 300px width
+      maxWidth: 'none'
+    };
   };
 
   return (
@@ -81,12 +94,11 @@ export function Tooltip({
       {isVisible && (
         <div
           ref={tooltipRef}
-          className={`absolute z-50 px-4 py-3 text-sm text-white bg-gray-900/95 backdrop-blur-sm border border-gray-600/50 rounded-lg shadow-xl pointer-events-none ${getTooltipWidth()}`}
+          className="fixed z-50 px-4 py-3 text-sm text-white bg-gray-900/95 backdrop-blur-sm border border-gray-600/50 rounded-lg shadow-xl pointer-events-none"
           style={{
-            left: '50%',
-            bottom: '100%',
-            transform: 'translateX(-50%)',
-            marginBottom: '8px',
+            ...getTooltipStyles(),
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y}px`,
           }}
         >
           {imagePreview ? (
@@ -113,7 +125,20 @@ export function Tooltip({
               )}
             </div>
           )}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900/95 border-gray-600/50 rotate-45 border-r border-b" />
+          
+          {/* Tooltip arrow */}
+          <div 
+            className="absolute w-2 h-2 bg-gray-900/95 border-gray-600/50 rotate-45"
+            style={{
+              left: '50%',
+              transform: 'translateX(-50%)',
+              [position === 'top' ? 'bottom' : 'top']: '-4px',
+              borderRight: position === 'top' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
+              borderBottom: position === 'top' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
+              borderLeft: position === 'bottom' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
+              borderTop: position === 'bottom' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
+            }}
+          />
         </div>
       )}
     </div>
