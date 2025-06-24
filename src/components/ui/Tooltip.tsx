@@ -53,7 +53,7 @@ export function Tooltip({ content, children, position = 'top', className = '' }:
   }, [isVisible, position]);
 
   return (
-    <>
+    <div className="relative">
       <div
         ref={triggerRef}
         onMouseEnter={() => setIsVisible(true)}
@@ -66,23 +66,18 @@ export function Tooltip({ content, children, position = 'top', className = '' }:
       {isVisible && (
         <div
           ref={tooltipRef}
-          className="fixed z-50 px-3 py-2 text-sm text-white bg-gray-900 border border-gray-600 rounded-lg shadow-lg max-w-xs pointer-events-none"
+          className="absolute z-50 px-3 py-2 text-sm text-white bg-gray-900 border border-gray-600 rounded-lg shadow-lg max-w-xs pointer-events-none"
           style={{
-            left: `${tooltipPosition.x}px`,
-            top: `${tooltipPosition.y}px`,
+            left: '50%',
+            bottom: '100%',
+            transform: 'translateX(-50%)',
+            marginBottom: '8px',
           }}
         >
           {content}
-          <div
-            className={`absolute w-2 h-2 bg-gray-900 border-gray-600 transform rotate-45 ${
-              position === 'top' ? 'bottom-[-4px] left-1/2 -translate-x-1/2 border-r border-b' :
-              position === 'bottom' ? 'top-[-4px] left-1/2 -translate-x-1/2 border-l border-t' :
-              position === 'left' ? 'right-[-4px] top-1/2 -translate-y-1/2 border-t border-r' :
-              'left-[-4px] top-1/2 -translate-y-1/2 border-b border-l'
-            }`}
-          />
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 border-gray-600 rotate-45 border-r border-b" />
         </div>
       )}
-    </>
+    </div>
   );
 }

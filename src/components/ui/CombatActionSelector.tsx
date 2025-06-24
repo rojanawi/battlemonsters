@@ -203,7 +203,8 @@ export function CombatActionSelector({ combatState, onActionSelect, disabled }: 
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Single Column Layout for Actions */}
+      <div className="space-y-3">
         {combatState.available_actions.map((action) => {
           const canAfford = canAffordAction(action);
           const isDisabled = disabled || !canAfford;
@@ -217,7 +218,7 @@ export function CombatActionSelector({ combatState, onActionSelect, disabled }: 
               <button
                 onClick={() => handleActionClick(action)}
                 disabled={isDisabled}
-                className={`p-4 border rounded-lg text-left transition-all duration-200 ${
+                className={`w-full p-4 border rounded-lg text-left transition-all duration-200 ${
                   isDisabled 
                     ? 'border-gray-600/20 bg-gray-800/30 text-gray-500 cursor-not-allowed' 
                     : getActionColor(action.type)

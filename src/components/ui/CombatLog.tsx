@@ -1,12 +1,20 @@
-import React from 'react';
-import { ScrollText, Sword, Shield, Sparkles, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ScrollText, Sword, Shield, Sparkles, RotateCcw, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import type { CombatPhase } from '../../types/combat';
 
 interface CombatLogProps {
   combatLog: CombatPhase[];
 }
 
+interface ActionImage {
+  url?: string;
+  isGenerating: boolean;
+  error: boolean;
+}
+
 export function CombatLog({ combatLog }: CombatLogProps) {
+  const [actionImages, setActionImages] = useState<Record<string, ActionImage>>({});
+
   const getActionIcon = (type: string) => {
     switch (type) {
       case 'attack':
@@ -20,6 +28,125 @@ export function CombatLog({ combatLog }: CombatLogProps) {
       default:
         return <Sword className="w-4 h-4 text-gray-400" />;
     }
+  };
+
+  const generateActionImage = async (phaseIndex: number, action: any, actionType: 'initiator' | 'reactor') => {
+    const imageKey = `${phaseIndex}-${actionType}`;
+    
+    // Don't generate if already generating or exists
+    if (actionImages[imageKey]?.isGenerating || actionImages[imageKey]?.url) {
+      return;
+    }
+
+    setActionImages(prev => ({
+      ...prev,
+      [imageKey]: { isGenerating: true, error: false }
+    }));
+
+    try {
+      const prompt = `Epic fantasy combat action illustration: ${action.name} - ${action.description}. 
+      
+      Dynamic action scene showing the combat move in progress, magical effects and energy, dramatic lighting with sparks and particles, intense battle atmosphere, fantasy art style, high contrast, detailed character action pose, combat magic effects, cinematic composition, 16:9 aspect ratio.`;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/character-image`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            prompt,
+            aspect_ratio: '16:9'
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to generate action image');
+      }
+
+      const data = await response.json();
+      
+      setActionImages(prev => ({
+        ...prev,
+        [imageKey]: { 
+          url: data.url, 
+          isGenerating: false, 
+          error: false 
+        }
+      }));
+
+    } catch (error) {
+      console.error('Failed to generate action image:', error);
+      setActionImages(prev => ({
+        ...prev,
+        [imageKey]: { 
+          isGenerating: false, 
+          error: true 
+        }
+      }));
+    }
+  };
+
+  const retryImageGeneration = (phaseIndex: number, action: any, actionType: 'initiator' | 'reactor') => {
+    const imageKey = `${phaseIndex}-${actionType}`;
+    setActionImages(prev => ({
+      ...prev,
+      [imageKey]: { isGenerating: false, error: false }
+    }));
+    generateActionImage(phaseIndex, action, actionType);
+  };
+
+  // Generate images for new combat log entries
+  useEffect(() => {
+    combatLog.forEach((phase, index) => {
+      if (phase.initiator_action) {
+        const imageKey = `${index}-initiator`;
+        if (!actionImages[imageKey]) {
+          generateActionImage(index, phase.initiator_action, 'initiator');
+        }
+      }
+      if (phase.reactor_action) {
+        const imageKey = `${index}-reactor`;
+        if (!actionImages[imageKey]) {
+          generateActionImage(index, phase.reactor_action, 'reactor');
+        }
+      }
+    });
+  }, [combatLog]);
+
+  const renderActionImage = (phaseIndex: number, action: any, actionType: 'initiator' | 'reactor') => {
+    const imageKey = `${phaseIndex}-${actionType}`;
+    const imageData = actionImages[imageKey];
+
+    if (!imageData) return null;
+
+    return (
+      <div className="w-16 h-9 rounded overflow-hidden bg-gray-800/50 flex-shrink-0">
+        {imageData.isGenerating ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+          </div>
+        ) : imageData.error ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <button
+              onClick={() => retryImageGeneration(phaseIndex, action, actionType)}
+              className="w-full h-full flex items-center justify-center hover:bg-gray-700/50 transition-colors"
+              title="Retry image generation"
+            >
+              <RefreshCw className="w-3 h-3 text-gray-400" />
+            </button>
+          </div>
+        ) : imageData.url ? (
+          <img
+            src={imageData.url}
+            alt={`${action.name} action`}
+            className="w-full h-full object-cover"
+          />
+        ) : null}
+      </div>
+    );
   };
 
   return (
@@ -44,28 +171,38 @@ export function CombatLog({ combatLog }: CombatLogProps) {
               {phase.initiator_action && (
                 <div className="mb-2">
                   <div className="flex items-center gap-2 mb-1">
-                    {getActionIcon(phase.initiator_action.type)}
-                    <span className="text-sm font-semibold text-white">
-                      {phase.initiator === 'player' ? 'You' : 'Opponent'} used {phase.initiator_action.name}
-                    </span>
+                    {renderActionImage(index, phase.initiator_action, 'initiator')}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        {getActionIcon(phase.initiator_action.type)}
+                        <span className="text-sm font-semibold text-white">
+                          {phase.initiator === 'player' ? 'You' : 'Opponent'} used {phase.initiator_action.name}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-300 mt-1">
+                        {phase.initiator_action.description}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-300 ml-6">
-                    {phase.initiator_action.description}
-                  </p>
                 </div>
               )}
 
               {phase.reactor_action && (
                 <div className="mb-2">
                   <div className="flex items-center gap-2 mb-1">
-                    {getActionIcon(phase.reactor_action.type)}
-                    <span className="text-sm font-semibold text-white">
-                      {phase.initiator === 'opponent' ? 'You' : 'Opponent'} reacted with {phase.reactor_action.name}
-                    </span>
+                    {renderActionImage(index, phase.reactor_action, 'reactor')}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        {getActionIcon(phase.reactor_action.type)}
+                        <span className="text-sm font-semibold text-white">
+                          {phase.initiator === 'opponent' ? 'You' : 'Opponent'} reacted with {phase.reactor_action.name}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-300 mt-1">
+                        {phase.reactor_action.description}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-300 ml-6">
-                    {phase.reactor_action.description}
-                  </p>
                 </div>
               )}
 
