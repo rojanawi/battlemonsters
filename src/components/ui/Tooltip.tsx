@@ -18,45 +18,63 @@ export function Tooltip({
   imagePreview 
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    // Update mouse position relative to viewport
-    setMousePosition({ x: e.clientX, y: e.clientY });
-  };
+  useEffect(() => {
+    if (isVisible && triggerRef.current && tooltipRef.current) {
+      const triggerRect = triggerRef.current.getBoundingClientRect();
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
 
-  const handleMouseEnter = (e: React.MouseEvent) => {
-    setIsVisible(true);
-    setMousePosition({ x: e.clientX, y: e.clientY });
-  };
+      let x = 0;
+      let y = 0;
 
-  const handleMouseLeave = () => {
-    setIsVisible(false);
-  };
+      switch (position) {
+        case 'top':
+          x = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
+          y = triggerRect.top - tooltipRect.height - 8;
+          break;
+        case 'bottom':
+          x = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
+          y = triggerRect.bottom + 8;
+          break;
+        case 'left':
+          x = triggerRect.left - tooltipRect.width - 8;
+          y = triggerRect.top + triggerRect.height / 2 - tooltipRect.height / 2;
+          break;
+        case 'right':
+          x = triggerRect.right + 8;
+          y = triggerRect.top + triggerRect.height / 2 - tooltipRect.height / 2;
+          break;
+      }
+
+      // Adjust for viewport boundaries
+      if (x < 8) x = 8;
+      if (x + tooltipRect.width > viewportWidth - 8) x = viewportWidth - tooltipRect.width - 8;
+      if (y < 8) y = 8;
+      if (y + tooltipRect.height > viewportHeight - 8) y = viewportHeight - tooltipRect.height - 8;
+
+      setTooltipPosition({ x, y });
+    }
+  }, [isVisible, position]);
 
   const getTooltipStyles = () => {
-    const baseStyles = {
-      left: `${mousePosition.x + 10}px`, // 10px offset from cursor
-      top: `${mousePosition.y - 10}px`,  // 10px above cursor
-    };
-
     if (imagePreview) {
       return {
-        ...baseStyles,
         width: '320px', // Fixed 320px for image previews
         maxWidth: 'none'
       };
     }
     if (wide) {
       return {
-        ...baseStyles,
         width: '300px', // Fixed 300px for wide tooltips
         maxWidth: 'none'
       };
     }
     return {
-      ...baseStyles,
       width: '300px', // Default 300px width
       maxWidth: 'none'
     };
@@ -66,9 +84,8 @@ export function Tooltip({
     <div className="relative">
       <div
         ref={triggerRef}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
         className={className}
       >
         {children}
@@ -76,8 +93,13 @@ export function Tooltip({
       
       {isVisible && (
         <div
+          ref={tooltipRef}
           className="fixed z-50 px-4 py-3 text-sm text-white bg-gray-900/95 backdrop-blur-sm border border-gray-600/50 rounded-lg shadow-xl pointer-events-none"
-          style={getTooltipStyles()}
+          style={{
+            ...getTooltipStyles(),
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y}px`,
+          }}
         >
           {imagePreview ? (
             <div className="space-y-3">
@@ -103,6 +125,20 @@ export function Tooltip({
               )}
             </div>
           )}
+          
+          {/* Tooltip arrow */}
+          <div 
+            className="absolute w-2 h-2 bg-gray-900/95 border-gray-600/50 rotate-45"
+            style={{
+              left: '50%',
+              transform: 'translateX(-50%)',
+              [position === 'top' ? 'bottom' : 'top']: '-4px',
+              borderRight: position === 'top' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
+              borderBottom: position === 'top' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
+              borderLeft: position === 'bottom' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
+              borderTop: position === 'bottom' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
+            }}
+          />
         </div>
       )}
     </div>
