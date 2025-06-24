@@ -5,6 +5,7 @@ import { CombatPhaseDisplay } from './ui/CombatPhaseDisplay';
 import { CombatLog } from './ui/CombatLog';
 import { CombatStats } from './ui/CombatStats';
 import { VictoryScreen } from './ui/VictoryScreen';
+import { CombatHeader } from './ui/CombatHeader';
 import { 
   initializeCombatState, 
   resolveCombatActions, 
@@ -319,52 +320,81 @@ export function TurnBasedCombat() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Battle End Overlay */}
-        {combatState.is_battle_ended && showingFinalLogs && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-gray-900/90 p-8 rounded-xl border border-purple-500/50 text-center max-w-md">
-              <h2 className={`text-3xl font-bold mb-4 ${
-                combatState.winner === 'player' ? 'text-yellow-400' : 'text-red-400'
-              }`}>
-                {combatState.winner === 'player' ? 'VICTORY!' : 'DEFEAT!'}
-              </h2>
-              <p className="text-purple-200 mb-4">
-                {combatState.winner === 'player' 
-                  ? `${character.character_name} emerges triumphant!`
-                  : `${opponent.character_name} has defeated you!`
-                }
-              </p>
-              <div className="text-sm text-purple-300">
-                Reviewing final combat logs...
-              </div>
-              <div className="mt-4 w-full bg-gray-700 rounded-full h-2">
-                <div className="bg-purple-500 h-2 rounded-full animate-pulse" style={{ width: '100%' }}></div>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex flex-col">
+      {/* Battle End Overlay */}
+      {combatState.is_battle_ended && showingFinalLogs && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gray-900/90 p-8 rounded-xl border border-purple-500/50 text-center max-w-md">
+            <h2 className={`text-3xl font-bold mb-4 ${
+              combatState.winner === 'player' ? 'text-yellow-400' : 'text-red-400'
+            }`}>
+              {combatState.winner === 'player' ? 'VICTORY!' : 'DEFEAT!'}
+            </h2>
+            <p className="text-purple-200 mb-4">
+              {combatState.winner === 'player' 
+                ? `${character.character_name} emerges triumphant!`
+                : `${opponent.character_name} has defeated you!`
+              }
+            </p>
+            <div className="text-sm text-purple-300">
+              Reviewing final combat logs...
+            </div>
+            <div className="mt-4 w-full bg-gray-700 rounded-full h-2">
+              <div className="bg-purple-500 h-2 rounded-full animate-pulse" style={{ width: '100%' }}></div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Column - Combat Stats */}
-          <div className="space-y-6">
-            <CombatStats
+      <div className="container mx-auto px-4 py-6 flex-1 flex flex-col gap-6">
+        {/* First Row: Player, Opponent, Round Info, Combat Rules */}
+        <div className="grid grid-cols-4 gap-6">
+          {/* Player Stats */}
+          <div className="bg-gray-900/50 backdrop-blur-sm p-4 rounded-xl border border-blue-500/20">
+            <CombatHeader
               character={character}
-              opponent={opponent}
               combatState={combatState}
+              isPlayer={true}
             />
           </div>
 
-          {/* Center Column - Main Combat Area */}
-          <div className="space-y-6">
+          {/* Opponent Stats */}
+          <div className="bg-gray-900/50 backdrop-blur-sm p-4 rounded-xl border border-red-500/20">
+            <CombatHeader
+              character={opponent}
+              combatState={combatState}
+              isPlayer={false}
+            />
+          </div>
+
+          {/* Round Info */}
+          <div className="bg-gray-900/50 backdrop-blur-sm p-4 rounded-xl border border-purple-500/20">
             <CombatPhaseDisplay
               combatState={combatState}
               character={character}
               opponent={opponent}
               isProcessing={isProcessing}
             />
+          </div>
 
+          {/* Combat Rules */}
+          <div className="bg-gray-900/50 backdrop-blur-sm p-4 rounded-xl border border-purple-500/20">
+            <h4 className="text-white font-semibold mb-3 text-sm">Combat Rules</h4>
+            <ul className="text-xs text-purple-200 space-y-1">
+              <li>• <strong>Player Initiative:</strong> You act first, opponent reacts</li>
+              <li>• <strong>Opponent Initiative:</strong> Opponent acts first, you react</li>
+              <li>• <strong>Actions:</strong> Attack, Defend, Special, Counter</li>
+              <li>• <strong>Strategy:</strong> Choose actions strong against opponent's type</li>
+              <li>• <strong>Energy:</strong> Regenerates +10 each turn</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Second Row: Actions/Reactions Lists */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Player Actions */}
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-4">Your Actions</h3>
             <CombatActionSelector
               combatState={combatState}
               onActionSelect={handlePlayerAction}
@@ -372,10 +402,31 @@ export function TurnBasedCombat() {
             />
           </div>
 
-          {/* Right Column - Combat Log */}
+          {/* Opponent Actions Preview */}
           <div>
-            <CombatLog combatLog={combatState.combat_log} />
+            <h3 className="text-lg font-semibold text-white mb-4">Opponent Actions</h3>
+            <div className="bg-gray-900/50 backdrop-blur-sm p-4 rounded-xl border border-red-500/20">
+              {combatState.opponent_declared_action ? (
+                <div className="p-3 bg-red-900/30 border border-red-500/30 rounded-lg">
+                  <h4 className="font-semibold text-red-200 mb-2">{combatState.opponent_declared_action.name}</h4>
+                  <p className="text-red-300 text-sm mb-2">{combatState.opponent_declared_action.description}</p>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-orange-400">{combatState.opponent_declared_action.damage} DMG</span>
+                    <span className="text-green-400">{combatState.opponent_declared_action.energy_cost} Energy</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-gray-400 py-8">
+                  <p className="text-sm">Opponent actions will appear here when they act</p>
+                </div>
+              )}
+            </div>
           </div>
+        </div>
+
+        {/* Remaining Space: Combat Log */}
+        <div className="flex-1 min-h-0">
+          <CombatLog combatLog={combatState.combat_log} />
         </div>
       </div>
     </div>
