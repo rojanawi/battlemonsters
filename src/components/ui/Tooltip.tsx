@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 
 interface TooltipProps {
   content: string | React.ReactNode;
@@ -18,129 +18,72 @@ export function Tooltip({
   imagePreview 
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (isVisible && triggerRef.current && tooltipRef.current) {
-      const triggerRect = triggerRef.current.getBoundingClientRect();
-      const tooltipRect = tooltipRef.current.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-
-      let x = 0;
-      let y = 0;
-
-      switch (position) {
-        case 'top':
-          x = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
-          y = triggerRect.top - tooltipRect.height - 8;
-          break;
-        case 'bottom':
-          x = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
-          y = triggerRect.bottom + 8;
-          break;
-        case 'left':
-          x = triggerRect.left - tooltipRect.width - 8;
-          y = triggerRect.top + triggerRect.height / 2 - tooltipRect.height / 2;
-          break;
-        case 'right':
-          x = triggerRect.right + 8;
-          y = triggerRect.top + triggerRect.height / 2 - tooltipRect.height / 2;
-          break;
-      }
-
-      // Adjust for viewport boundaries
-      if (x < 8) x = 8;
-      if (x + tooltipRect.width > viewportWidth - 8) x = viewportWidth - tooltipRect.width - 8;
-      if (y < 8) y = 8;
-      if (y + tooltipRect.height > viewportHeight - 8) y = viewportHeight - tooltipRect.height - 8;
-
-      setTooltipPosition({ x, y });
+  const getTooltipClasses = () => {
+    const baseClasses = "absolute z-50 px-4 py-3 text-sm text-white bg-gray-900/95 backdrop-blur-sm border border-gray-600/50 rounded-lg shadow-xl pointer-events-none transition-opacity duration-200";
+    
+    let positionClasses = "";
+    let arrowClasses = "";
+    
+    switch (position) {
+      case 'top':
+        positionClasses = "bottom-full left-1/2 transform -translate-x-1/2 mb-2";
+        arrowClasses = "after:absolute after:top-full after:left-1/2 after:transform after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-gray-900/95";
+        break;
+      case 'bottom':
+        positionClasses = "top-full left-1/2 transform -translate-x-1/2 mt-2";
+        arrowClasses = "before:absolute before:bottom-full before:left-1/2 before:transform before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-gray-900/95";
+        break;
+      case 'left':
+        positionClasses = "right-full top-1/2 transform -translate-y-1/2 mr-2";
+        arrowClasses = "after:absolute after:left-full after:top-1/2 after:transform after:-translate-y-1/2 after:border-4 after:border-transparent after:border-l-gray-900/95";
+        break;
+      case 'right':
+        positionClasses = "left-full top-1/2 transform -translate-y-1/2 ml-2";
+        arrowClasses = "before:absolute before:right-full before:top-1/2 before:transform before:-translate-y-1/2 before:border-4 before:border-transparent before:border-r-gray-900/95";
+        break;
     }
-  }, [isVisible, position]);
 
-  const getTooltipStyles = () => {
-    if (imagePreview) {
-      return {
-        width: '320px', // Fixed 320px for image previews
-        maxWidth: 'none'
-      };
-    }
-    if (wide) {
-      return {
-        width: '300px', // Fixed 300px for wide tooltips
-        maxWidth: 'none'
-      };
-    }
-    return {
-      width: '300px', // Default 300px width
-      maxWidth: 'none'
-    };
+    const widthClasses = imagePreview ? "w-80" : wide ? "w-80" : "w-80";
+    const visibilityClasses = isVisible ? "opacity-100" : "opacity-0 pointer-events-none";
+    
+    return `${baseClasses} ${positionClasses} ${arrowClasses} ${widthClasses} ${visibilityClasses}`;
   };
 
   return (
-    <div className="relative">
-      <div
-        ref={triggerRef}
-        onMouseEnter={() => setIsVisible(true)}
-        onMouseLeave={() => setIsVisible(false)}
-        className={className}
-      >
-        {children}
-      </div>
+    <div 
+      className={`relative inline-block ${className}`}
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={() => setIsVisible(false)}
+    >
+      {children}
       
-      {isVisible && (
-        <div
-          ref={tooltipRef}
-          className="fixed z-50 px-4 py-3 text-sm text-white bg-gray-900/95 backdrop-blur-sm border border-gray-600/50 rounded-lg shadow-xl pointer-events-none"
-          style={{
-            ...getTooltipStyles(),
-            left: `${tooltipPosition.x}px`,
-            top: `${tooltipPosition.y}px`,
-          }}
-        >
-          {imagePreview ? (
-            <div className="space-y-3">
-              <div className="w-full h-48 rounded-lg overflow-hidden bg-gray-800/50">
-                <img
-                  src={imagePreview}
-                  alt="Action preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              {typeof content === 'string' ? (
-                <p className="text-center text-gray-200">{content}</p>
-              ) : (
-                content
-              )}
+      <div className={getTooltipClasses()}>
+        {imagePreview ? (
+          <div className="space-y-3">
+            <div className="w-full h-48 rounded-lg overflow-hidden bg-gray-800/50">
+              <img
+                src={imagePreview}
+                alt="Action preview"
+                className="w-full h-full object-cover"
+              />
             </div>
-          ) : (
-            <div className="leading-relaxed">
-              {typeof content === 'string' ? (
-                <p>{content}</p>
-              ) : (
-                content
-              )}
-            </div>
-          )}
-          
-          {/* Tooltip arrow */}
-          <div 
-            className="absolute w-2 h-2 bg-gray-900/95 border-gray-600/50 rotate-45"
-            style={{
-              left: '50%',
-              transform: 'translateX(-50%)',
-              [position === 'top' ? 'bottom' : 'top']: '-4px',
-              borderRight: position === 'top' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
-              borderBottom: position === 'top' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
-              borderLeft: position === 'bottom' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
-              borderTop: position === 'bottom' ? '1px solid rgb(75 85 99 / 0.5)' : 'none',
-            }}
-          />
-        </div>
-      )}
+            {typeof content === 'string' ? (
+              <p className="text-center text-gray-200">{content}</p>
+            ) : (
+              content
+            )}
+          </div>
+        ) : (
+          <div className="leading-relaxed">
+            {typeof content === 'string' ? (
+              <p>{content}</p>
+            ) : (
+              content
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
