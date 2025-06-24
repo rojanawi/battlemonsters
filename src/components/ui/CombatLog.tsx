@@ -38,6 +38,8 @@ export function CombatLog({ combatLog }: CombatLogProps) {
       return;
     }
 
+    console.log(`Generating image for action: ${action.name} - ${action.description}`);
+
     setActionImages(prev => ({
       ...prev,
       [imageKey]: { isGenerating: true, error: false }
@@ -47,6 +49,8 @@ export function CombatLog({ combatLog }: CombatLogProps) {
       const prompt = `Epic fantasy combat action illustration: ${action.name} - ${action.description}. 
       
       Dynamic action scene showing the combat move in progress, magical effects and energy, dramatic lighting with sparks and particles, intense battle atmosphere, fantasy art style, high contrast, detailed character action pose, combat magic effects, cinematic composition, 16:9 aspect ratio.`;
+
+      console.log(`Making API call for image generation with prompt: ${prompt}`);
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/character-image`,
@@ -63,10 +67,13 @@ export function CombatLog({ combatLog }: CombatLogProps) {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to generate action image');
+        const errorText = await response.text();
+        console.error(`Image generation failed: ${response.status} - ${errorText}`);
+        throw new Error(`Failed to generate action image: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log(`Image generation successful for ${imageKey}:`, data);
       
       setActionImages(prev => ({
         ...prev,
@@ -100,31 +107,39 @@ export function CombatLog({ combatLog }: CombatLogProps) {
 
   // Generate images for new combat log entries
   useEffect(() => {
+    console.log('Combat log updated, checking for new actions to generate images for:', combatLog);
+    
     combatLog.forEach((phase, index) => {
       if (phase.initiator_action) {
         const imageKey = `${index}-initiator`;
         if (!actionImages[imageKey]) {
+          console.log(`Triggering image generation for initiator action: ${phase.initiator_action.name}`);
           generateActionImage(index, phase.initiator_action, 'initiator');
         }
       }
       if (phase.reactor_action) {
         const imageKey = `${index}-reactor`;
         if (!actionImages[imageKey]) {
+          console.log(`Triggering image generation for reactor action: ${phase.reactor_action.name}`);
           generateActionImage(index, phase.reactor_action, 'reactor');
         }
       }
     });
-  }, [combatLog]);
+  }, [combatLog.length]); // Only trigger when combat log length changes
 
   const renderActionImage = (phaseIndex: number, action: any, actionType: 'initiator' | 'reactor') => {
     const imageKey = `${phaseIndex}-${actionType}`;
     const imageData = actionImages[imageKey];
 
-    if (!imageData) return null;
+    console.log(`Rendering action image for ${imageKey}:`, imageData);
 
     return (
-      <div className="w-16 h-9 rounded overflow-hidden bg-gray-800/50 flex-shrink-0">
-        {imageData.isGenerating ? (
+      <div className="w-16 h-9 rounded overflow-hidden bg-gray-800/50 flex-shrink-0 border border-gray-600/30">
+        {!imageData ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="w-3 h-3 bg-gray-600 rounded"></div>
+          </div>
+        ) : imageData.isGenerating ? (
           <div className="w-full h-full flex items-center justify-center">
             <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
           </div>
@@ -143,8 +158,14 @@ export function CombatLog({ combatLog }: CombatLogProps) {
             src={imageData.url}
             alt={`${action.name} action`}
             className="w-full h-full object-cover"
+            onLoad={() => console.log(`Image loaded successfully for ${imageKey}`)}
+            onError={() => console.error(`Image failed to load for ${imageKey}`)}
           />
-        ) : null}
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <AlertCircle className="w-3 h-3 text-gray-400" />
+          </div>
+        )}
       </div>
     );
   };
@@ -170,7 +191,7 @@ export function CombatLog({ combatLog }: CombatLogProps) {
 
               {phase.initiator_action && (
                 <div className="mb-2">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-3 mb-1">
                     {renderActionImage(index, phase.initiator_action, 'initiator')}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -189,7 +210,7 @@ export function CombatLog({ combatLog }: CombatLogProps) {
 
               {phase.reactor_action && (
                 <div className="mb-2">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-3 mb-1">
                     {renderActionImage(index, phase.reactor_action, 'reactor')}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
