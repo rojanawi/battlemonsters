@@ -1,14 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Swords, AlertCircle } from 'lucide-react';
 import { PromptInput } from './PromptInput';
 import { useGame } from '../context/GameContext';
-import { BattleScreen } from './BattleScreen';
+import { TurnBasedCombat } from './TurnBasedCombat';
+import { getRandomOpponent } from '../data/opponents';
 
 export function CharacterCreation() {
-  const { state } = useGame();
+  const { state, dispatch } = useGame();
+
+  // Set opponent when character is created
+  useEffect(() => {
+    if (state.character && !state.opponent) {
+      console.log('Character created, selecting random opponent...');
+      const randomOpponent = getRandomOpponent();
+      console.log('Selected opponent:', randomOpponent);
+      dispatch({ type: 'SET_OPPONENT', payload: randomOpponent });
+    }
+  }, [state.character, state.opponent, dispatch]);
 
   if (state.character) {
-    return <BattleScreen />;
+    return <TurnBasedCombat />;
   }
 
   return (

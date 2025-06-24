@@ -16,18 +16,20 @@ interface BattlePanel {
 
 export function BattleStoryScreen() {
   const { state, dispatch } = useGame();
-  const { character, opponent } = state;
+  const { character, opponent, isGeneratingActions } = state;
   
   const [playerHp, setPlayerHp] = useState(character?.hp || 100);
   const [opponentHp, setOpponentHp] = useState(opponent?.hp || 100);
   const [battlePanels, setBattlePanels] = useState<BattlePanel[]>([]);
   const [battleEnded, setBattleEnded] = useState(false);
   const [playerWon, setPlayerWon] = useState(false);
+  const [turnNumber, setTurnNumber] = useState(1);
 
   useEffect(() => {
     // Generate the first battle panel when component mounts
     if (state.selectedPower !== undefined && character && opponent) {
-      generateBattlePanel(0);
+      const actions = character.current_actions || character.powers;
+      generateBattlePanel(0, state.selectedPower, actions);
     }
   }, []);
 
@@ -43,6 +45,50 @@ export function BattleStoryScreen() {
       generateFinalPanel(true);
     }
   }, [playerHp, opponentHp, battleEnded]);
+
+  const generateNewActions = async () => {
+    if (!character || !opponent || battleEnded) return;
+
+    dispatch({ type: 'SET_GENERATING_ACTIONS', payload: true });
+    
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/battle-actions`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            character,
+            opponent,
+            turn_number: turnNumber + 1
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+        console.error('Battle actions API error:', errorMessage);
+        throw new Error(`Failed to generate battle actions: ${errorMessage}`);
+      }
+
+      const data = await response.json();
+      if (data.actions && Array.isArray(data.actions) && data.actions.length > 0) {
+        dispatch({ type: 'SET_CHARACTER_ACTIONS', payload: data.actions });
+      } else {
+        console.warn('No valid actions returned, keeping current actions');
+        // Keep using current actions if new generation fails
+      }
+    } catch (error) {
+      console.error('Failed to generate battle actions:', error);
+      console.log('Continuing with current actions due to generation failure');
+      // Continue with current actions - don't break the battle flow
+    } finally {
+      dispatch({ type: 'SET_GENERATING_ACTIONS', payload: false });
+    }
+  };
 
   const generateFinalPanel = async (victory: boolean) => {
     if (!character) return;
@@ -113,15 +159,19 @@ export function BattleStoryScreen() {
     }
   };
 
-  const generateBattlePanel = async (panelIndex: number) => {
-    if (!character || !opponent) return;
+  const generateBattlePanel = async (panelIndex: number, selectedPowerIndex: number, actionsArray: any[]) => {
+    if (!character || !opponent || !actionsArray || selectedPowerIndex >= actionsArray.length) return;
 
-    const selectedPower = character.powers[state.selectedPower || 0];
+    const selectedAction = actionsArray[selectedPowerIndex];
+    if (!selectedAction || !selectedAction.name) {
+      console.error('Invalid action selected:', selectedAction);
+      return;
+    }
     
     // Enhanced battle prompts with detailed character aesthetics
-    const prompt = `Epic fantasy battle scene: ${character.character_name} (${character.image_prompt}) unleashing devastating ${selectedPower.name} attack against ${opponent.character_name} (${opponent.image_prompt}). 
+    const prompt = `Epic fantasy battle scene: ${character.character_name} (${character.image_prompt}) unleashing devastating ${selectedAction.name} attack against ${opponent.character_name} (${opponent.image_prompt}). 
     
-    Action: ${selectedPower.description}. The attacker shows ${character.description} while the defender displays ${opponent.description}.
+    Action: ${selectedAction.description}. The attacker shows ${character.description} while the defender displays ${opponent.description}.
     
     Visual style: Intense combat action, explosive magical effects, dramatic lighting with sparks and energy, debris flying through the air, fierce expressions showing determination and pain, dynamic action poses mid-combat, cinematic battle photography, high contrast lighting, magical sparks and flames, destruction and chaos around them, epic confrontation, dark fantasy art style with vibrant magical effects.`;
 
@@ -192,19 +242,55 @@ export function BattleStoryScreen() {
     }
   };
 
-  const handleAttack = async (powerIndex: number) => {
+  const handleAttack = async (powerIndex: number, actionsOverride?: any[]) => {
     if (!character || battleEnded) return;
     
     dispatch({ type: 'SELECT_POWER', payload: powerIndex });
     const nextPanelIndex = battlePanels.length;
-    await generateBattlePanel(nextPanelIndex);
+    
+    // Use provided actions or fall back to current actions
+    const actions = actionsOverride || character.current_actions || character.powers;
+    
+    // Generate new battle panel with the specific actions array
+    await generateBattlePanel(nextPanelIndex, powerIndex, actions);
+    
+    // Generate new actions for next turn (if battle continues)
+    if (!battleEnded) {
+      setTurnNumber(prev => prev + 1);
+      await generateNewActions();
+    }
+  };
+
+  const handleCustomAction = (actionDescription: string) => {
+    if (!character || battleEnded) return;
+
+    // Create a custom action object
+    const customAction = {
+      name: "Custom Action",
+      description: actionDescription,
+      attack_points: Math.floor(Math.random() * 20) + 15, // Random damage 15-35
+      type: 'custom' as const
+    };
+
+    // Add the custom action to the current actions
+    const currentActions = character.current_actions || [];
+    const updatedActions = [...currentActions, customAction];
+    
+    dispatch({ type: 'SET_CHARACTER_ACTIONS', payload: updatedActions });
+    
+    // Execute the custom action immediately with the updated actions array
+    const customActionIndex = updatedActions.length - 1;
+    handleAttack(customActionIndex, updatedActions);
   };
 
   const retryPanel = (panelIndex: number) => {
     if (battlePanels[panelIndex].isFinalPanel) {
       generateFinalPanel(playerWon);
     } else {
-      generateBattlePanel(panelIndex);
+      // For retry, use the current selected power and actions
+      const actions = character?.current_actions || character?.powers || [];
+      const selectedPowerIndex = state.selectedPower || 0;
+      generateBattlePanel(panelIndex, selectedPowerIndex, actions);
     }
   };
 
@@ -224,6 +310,8 @@ export function BattleStoryScreen() {
         playerWon={playerWon}
         onGoBack={goBackToBattle}
         onAttack={handleAttack}
+        onCustomAction={handleCustomAction}
+        isGeneratingActions={isGeneratingActions}
       />
 
       {/* Main Content Area */}

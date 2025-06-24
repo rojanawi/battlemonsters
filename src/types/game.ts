@@ -6,6 +6,13 @@ export interface Power {
   damage_range: string;
 }
 
+export interface BattleAction {
+  name: string;
+  description: string;
+  attack_points: number;
+  type: 'generic' | 'funny' | 'thematic' | 'custom';
+}
+
 export interface Character {
   character_name: string;
   description: string;
@@ -15,6 +22,7 @@ export interface Character {
   powers: Power[];
   image_prompt: string;
   image_url?: string;
+  current_actions?: BattleAction[];
 }
 
 export interface Opponent {
@@ -36,6 +44,7 @@ export interface GameState {
   selectedPower?: number;
   isGeneratingImage: boolean;
   imageGenerationError: boolean;
+  isGeneratingActions: boolean;
 }
 
 export type GameAction =
@@ -46,4 +55,9 @@ export type GameAction =
   | { type: 'SELECT_POWER'; payload: number | undefined }
   | { type: 'SET_CHARACTER_IMAGE'; payload: string }
   | { type: 'SET_GENERATING_IMAGE'; payload: boolean }
-  | { type: 'SET_IMAGE_GENERATION_ERROR'; payload: boolean };
+  | { type: 'SET_IMAGE_GENERATION_ERROR'; payload: boolean }
+  | { type: 'SET_CHARACTER_ACTIONS'; payload: BattleAction[] }
+  | { type: 'SET_GENERATING_ACTIONS'; payload: boolean };
+
+// Re-export combat types for compatibility
+export type { CombatAction, CombatState, CombatPhase, CombatResolution } from './combat';
