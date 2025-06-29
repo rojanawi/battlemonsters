@@ -5,6 +5,15 @@ import { useGame } from '../../context/GameContext';
 export function DemoModeToggle() {
   const { state, dispatch } = useGame();
 
+  // Check if demo query parameter is present
+  const urlParams = new URLSearchParams(window.location.search);
+  const isDemoAllowed = urlParams.has('demo');
+
+  // Don't render the toggle if demo is not allowed
+  if (!isDemoAllowed) {
+    return null;
+  }
+
   const handleToggle = () => {
     const newDemoMode = !state.demoMode;
     dispatch({ type: 'TOGGLE_DEMO_MODE', payload: newDemoMode });
