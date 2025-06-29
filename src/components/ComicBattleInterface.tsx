@@ -613,80 +613,81 @@ export function ComicBattleInterface() {
 
         {/* Central Comic Strip Area */}
         <div className="flex-1 flex flex-col">
-          <div className="bg-gray-900/50 backdrop-blur-sm border-b border-purple-500/20 p-4 flex items-center justify-between">
-            
-            {/* Left Side - Back and Restart Buttons */}
-            <div className="flex items-center gap-3">
-              {/* Back to Main Button */}
-              <button
-                onClick={handleBackToMain}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-600/20 to-gray-700/20 hover:from-gray-600/30 hover:to-gray-700/30 text-gray-300 hover:text-gray-200 border border-gray-500/30 hover:border-gray-400/50 rounded-lg font-semibold text-sm transition-all duration-300"
-                title="Back to main screen"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+          {/* Top Bar - Only show when battle is not finalized */}
+          {!isBattleFinalized && (
+            <div className="bg-gray-900/50 backdrop-blur-sm border-b border-purple-500/20 p-4 flex items-center justify-between">
+              
+              {/* Left Side - Back and Restart Buttons */}
+              <div className="flex items-center gap-3">
+                {/* Back to Main Button */}
+                <button
+                  onClick={handleBackToMain}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-600/20 to-gray-700/20 hover:from-gray-600/30 hover:to-gray-700/30 text-gray-300 hover:text-gray-200 border border-gray-500/30 hover:border-gray-400/50 rounded-lg font-semibold text-sm transition-all duration-300"
+                  title="Back to main screen"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back
+                </button>
 
-              {/* Restart Button */}
-              <button
-                onClick={() => setShowRestartModal(true)}
-                disabled={battlePanels.length === 0}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 ${
-                  battlePanels.length === 0
-                    ? 'bg-gray-800/30 border border-gray-600/30 text-gray-500 cursor-not-allowed' 
-                    : 'bg-gradient-to-r from-red-600/20 to-orange-600/20 hover:from-red-600/30 hover:to-orange-600/30 text-red-300 hover:text-red-200 border border-red-500/30 hover:border-red-400/50'
-                }`}
-                title="Restart comic strip"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Restart
-              </button>
-            </div>
+                {/* Restart Button */}
+                <button
+                  onClick={() => setShowRestartModal(true)}
+                  disabled={battlePanels.length === 0}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                    battlePanels.length === 0
+                      ? 'bg-gray-800/30 border border-gray-600/30 text-gray-500 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-red-600/20 to-orange-600/20 hover:from-red-600/30 hover:to-orange-600/30 text-red-300 hover:text-red-200 border border-red-500/30 hover:border-red-400/50'
+                  }`}
+                  title="Restart comic strip"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Restart
+                </button>
+              </div>
 
-            {/* Title and Page Navigation - Center */}
-            <div className="flex items-center gap-4">
-              {/* Page Navigation */}
-              {totalPages > 1 && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
-                    disabled={currentPage === 0}
-                    className="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed text-purple-300 hover:text-purple-200 transition-all duration-200"
-                    title="Previous page"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  
-                  <div className="px-3 py-1 bg-purple-900/30 border border-purple-500/30 rounded-lg">
-                    <span className="text-purple-200 text-sm font-medium">
-                      Page {currentPage + 1} of {totalPages}
-                    </span>
+              {/* Title and Page Navigation - Center */}
+              <div className="flex items-center gap-4">
+                {/* Page Navigation */}
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                      disabled={currentPage === 0}
+                      className="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed text-purple-300 hover:text-purple-200 transition-all duration-200"
+                      title="Previous page"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    
+                    <div className="px-3 py-1 bg-purple-900/30 border border-purple-500/30 rounded-lg">
+                      <span className="text-purple-200 text-sm font-medium">
+                        Page {currentPage + 1} of {totalPages}
+                      </span>
+                    </div>
+                    
+                    <button
+                      onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                      disabled={currentPage === totalPages - 1}
+                      className="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed text-purple-300 hover:text-purple-200 transition-all duration-200"
+                      title="Next page"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
                   </div>
-                  
-                  <button
-                    onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
-                    disabled={currentPage === totalPages - 1}
-                    className="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed text-purple-300 hover:text-purple-200 transition-all duration-200"
-                    title="Next page"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-              )}
-
-              <h3 className="text-2xl font-bold text-white text-center">
-                Battle Comic Strip
-                {demoMode && (
-                  <span className="ml-3 text-sm font-normal text-purple-300 bg-purple-900/30 px-3 py-1 rounded-full border border-purple-500/30">
-                    Demo Mode
-                  </span>
                 )}
-              </h3>
-            </div>
-            
-            {/* Finalize Button - Right Side */}
-            <div>
-              {!isBattleFinalized && (
+
+                <h3 className="text-2xl font-bold text-white text-center">
+                  Battle Comic Strip
+                  {demoMode && (
+                    <span className="ml-3 text-sm font-normal text-purple-300 bg-purple-900/30 px-3 py-1 rounded-full border border-purple-500/30">
+                      Demo Mode
+                    </span>
+                  )}
+                </h3>
+              </div>
+              
+              {/* Finalize Button - Right Side */}
+              <div>
                 <button
                   onClick={handleFinalizeBattle}
                   disabled={isGeneratingAction || battlePanels.length === 0}
@@ -698,9 +699,9 @@ export function ComicBattleInterface() {
                 >
                   Finalize Battle
                 </button>
-              )}
+              </div>
             </div>
-          </div>
+          )}
           
           {/* Comic Panels and Controls Container */}
           <div className="flex-1 flex flex-col overflow-hidden">
