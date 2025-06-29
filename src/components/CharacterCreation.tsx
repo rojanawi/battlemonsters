@@ -19,7 +19,24 @@ export function CharacterCreation() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 py-8">
+    <div className="relative w-full max-w-2xl mx-auto px-4 py-8">
+      {/* Bolt Badge - Top Right */}
+      <div className="absolute top-4 right-4 z-10">
+        <a
+          href="https://bolt.new/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block transition-transform duration-200 hover:scale-110"
+          title="Made with Bolt.new"
+        >
+          <img
+            src="/bolt-badge/white_circle_360x360/white_circle_360x360.svg"
+            alt="Made with Bolt.new"
+            className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 opacity-90 hover:opacity-100 transition-opacity duration-200"
+          />
+        </a>
+      </div>
+
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center p-3 mb-6 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-500/20">
           <Swords className="w-10 h-10 text-purple-400" />
