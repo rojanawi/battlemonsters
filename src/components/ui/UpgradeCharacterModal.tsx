@@ -1,32 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Wand2, Send, Sparkles, RefreshCw } from 'lucide-react';
-import { ExamplePrompts } from './ExamplePrompts';
-import { SuggestionPopup } from './SuggestionPopup';
-import { DemoModeToggle } from './DemoModeToggle';
-import { DEMO_PHOENIX_WARRIOR, DEMO_TIME_MANIPULATOR } from '../../data/demoCharacters';
-import { getRandomOpponent } from '../../data/opponents';
+import { X, Wand2, Send, Sparkles, TrendingUp } from 'lucide-react';
+import { UpgradeSuggestionPopup } from './UpgradeSuggestionPopup';
+import { getRandomUpgradeSuggestions } from '../../data/upgradeData';
 
-interface RegenerateCharacterModalProps {
+interface UpgradeCharacterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCharacterGenerated: (character: any) => void;
+  onCharacterUpgraded: (character: any) => void;
   targetType: 'hero' | 'villain' | null;
+  currentCharacter: any;
   demoMode: boolean;
 }
 
-export function RegenerateCharacterModal({ 
+export function UpgradeCharacterModal({ 
   isOpen, 
   onClose, 
-  onCharacterGenerated, 
+  onCharacterUpgraded, 
   targetType,
+  currentCharacter,
   demoMode 
-}: RegenerateCharacterModalProps) {
-  const [prompt, setPrompt] = useState('');
-  const [selectedPrompt, setSelectedPrompt] = useState<string>('');
+}: UpgradeCharacterModalProps) {
+  const [upgradePrompt, setUpgradePrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [exampleUpgrades, setExampleUpgrades] = useState<string[]>([]);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -34,22 +33,15 @@ export function RegenerateCharacterModal({
   // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen) {
-      setPrompt('');
-      setSelectedPrompt('');
+      setUpgradePrompt('');
       setError(null);
       setIsLoading(false);
       setIsFocused(false);
       setShowSuggestions(false);
+      // Generate example upgrades
+      setExampleUpgrades(getRandomUpgradeSuggestions(3));
     }
   }, [isOpen]);
-
-  // Update input when a prompt is selected from examples
-  useEffect(() => {
-    if (selectedPrompt) {
-      setPrompt(selectedPrompt);
-      setShowSuggestions(false);
-    }
-  }, [selectedPrompt]);
 
   // Auto-resize textarea based on content
   useEffect(() => {
@@ -73,7 +65,7 @@ export function RegenerateCharacterModal({
         textarea.style.overflowY = 'hidden';
       }
     }
-  }, [prompt]);
+  }, [upgradePrompt]);
 
   // Handle clicks outside to close suggestions
   useEffect(() => {
@@ -102,27 +94,38 @@ export function RegenerateCharacterModal({
       setIsLoading(true);
       
       setTimeout(() => {
-        if (targetType === 'hero') {
-          onCharacterGenerated(DEMO_PHOENIX_WARRIOR);
-        } else {
-          // For villain in demo mode, use a random opponent
-          const randomOpponent = getRandomOpponent();
-          onCharacterGenerated(randomOpponent);
-        }
+        // Create an upgraded version of the current character for demo
+        const upgradedCharacter = {
+          ...currentCharacter,
+          character_name: `Enhanced ${currentCharacter.character_name}`,
+          description: `${currentCharacter.description} Now ${upgradePrompt || 'enhanced with mystical upgrades'}.`,
+          hp: Math.min(currentCharacter.hp + 20, 200),
+          energy: Math.min(currentCharacter.energy + 15, 150),
+          mana: Math.min(currentCharacter.mana + 10, 120),
+        };
+        
+        onCharacterUpgraded(upgradedCharacter);
         setIsLoading(false);
       }, 1500);
       
       return;
     }
 
-    // Regular mode - require prompt
-    if (!prompt.trim()) return;
+    // Regular mode - require upgrade prompt
+    if (!upgradePrompt.trim()) return;
 
     setShowSuggestions(false);
     setError(null);
     setIsLoading(true);
     
     try {
+      // Create upgrade prompt that builds on the existing character
+      const fullPrompt = `Upgrade this character: ${currentCharacter.character_name} - ${currentCharacter.description}. 
+
+Upgrade instructions: ${upgradePrompt.trim()}
+
+Keep the core identity and personality of the character, but enhance them with the requested upgrades. Maintain their existing powers but make them stronger or add complementary abilities. The character should feel like an evolved version of themselves.`;
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/character-creation`,
         {
@@ -130,18 +133,18 @@ export function RegenerateCharacterModal({
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ prompt: prompt.trim() }),
+          body: JSON.stringify({ prompt: fullPrompt }),
         }
       );
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to create character');
+        throw new Error(error.error || 'Failed to upgrade character');
       }
 
-      const character = await response.json();
-      onCharacterGenerated(character);
-      setPrompt('');
+      const upgradedCharacter = await response.json();
+      onCharacterUpgraded(upgradedCharacter);
+      setUpgradePrompt('');
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -168,11 +171,8 @@ export function RegenerateCharacterModal({
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    setPrompt(suggestion);
-    const hasAllParts = suggestion.includes(' with ') && suggestion.includes(' and ');
-    if (hasAllParts) {
-      setShowSuggestions(false);
-    }
+    setUpgradePrompt(suggestion);
+    setShowSuggestions(false);
     textareaRef.current?.focus();
   };
 
@@ -180,38 +180,38 @@ export function RegenerateCharacterModal({
     setShowSuggestions(false);
   };
 
-  const handlePromptSelect = (prompt: string) => {
-    setSelectedPrompt(prompt);
+  const handleExampleClick = (example: string) => {
+    setUpgradePrompt(example);
   };
 
   const getModalTitle = () => {
     if (targetType === 'hero') {
-      return 'Regenerate Hero Character';
+      return 'Upgrade Hero Character';
     } else if (targetType === 'villain') {
-      return 'Regenerate Villain Character';
+      return 'Upgrade Villain Character';
     }
-    return 'Regenerate Character';
+    return 'Upgrade Character';
   };
 
   const getButtonText = () => {
     if (demoMode) {
-      return `Generate Demo ${targetType === 'hero' ? 'Hero' : 'Villain'}`;
+      return `Upgrade Demo ${targetType === 'hero' ? 'Hero' : 'Villain'}`;
     }
-    return `Create New ${targetType === 'hero' ? 'Hero' : 'Villain'}`;
+    return `Upgrade ${targetType === 'hero' ? 'Hero' : 'Villain'}`;
   };
 
   const getPlaceholderText = () => {
     if (demoMode) {
-      return `Demo mode active - click to generate new ${targetType}`;
+      return `Demo mode active - describe upgrades for ${currentCharacter?.character_name || 'character'}`;
     }
-    return `Describe your new ${targetType} character...`;
+    return `Describe how to upgrade ${currentCharacter?.character_name || 'this character'}...`;
   };
 
   const isSubmitDisabled = () => {
     if (demoMode) {
       return false;
     }
-    return !prompt.trim();
+    return !upgradePrompt.trim();
   };
 
   if (!isOpen) return null;
@@ -226,8 +226,8 @@ export function RegenerateCharacterModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-purple-500/20">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-600/20 rounded-full">
-              <RefreshCw className="w-6 h-6 text-purple-400" />
+            <div className="p-2 bg-gradient-to-r from-green-600/20 to-blue-600/20 rounded-full">
+              <TrendingUp className="w-6 h-6 text-green-400" />
             </div>
             <h3 className="text-xl font-bold text-white">{getModalTitle()}</h3>
           </div>
@@ -242,19 +242,32 @@ export function RegenerateCharacterModal({
         {/* Content */}
         <div className="p-6">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center p-3 mb-4 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-500/20">
-              <Wand2 className="w-8 h-8 text-purple-400" />
+            <div className="inline-flex items-center justify-center p-3 mb-4 rounded-full bg-gradient-to-r from-green-900/50 to-blue-900/50 backdrop-blur-sm border border-green-500/20">
+              <Wand2 className="w-8 h-8 text-green-400" />
             </div>
-            <p className="text-purple-200 text-lg leading-relaxed">
-              Create a new {targetType} character to replace the current one
+            <p className="text-purple-200 text-lg leading-relaxed mb-2">
+              Enhance <strong>{currentCharacter?.character_name || 'your character'}</strong> with new abilities and features
+            </p>
+            <p className="text-purple-300 text-sm">
+              The upgraded character will keep their core identity while gaining new powers
             </p>
           </div>
+
+          {/* Current Character Info */}
+          {currentCharacter && (
+            <div className="mb-6 p-4 bg-gray-800/30 border border-purple-500/20 rounded-lg">
+              <h4 className="text-white font-semibold mb-2">Current Character:</h4>
+              <p className="text-purple-200 text-sm leading-relaxed">
+                <strong>{currentCharacter.character_name}</strong> - {currentCharacter.description}
+              </p>
+            </div>
+          )}
 
           {/* Demo Mode Indicator */}
           {demoMode && (
             <div className="mb-6 p-3 bg-purple-900/20 border border-purple-500/30 rounded-lg">
               <p className="text-sm text-purple-300 text-center">
-                <strong>Demo Mode Active:</strong> Will generate a predefined {targetType} character
+                <strong>Demo Mode Active:</strong> Will create an enhanced version of the current character
               </p>
             </div>
           )}
@@ -267,24 +280,24 @@ export function RegenerateCharacterModal({
             </div>
           )}
 
-          {/* Character Creation Form */}
+          {/* Upgrade Input Form */}
           <div ref={containerRef} className="space-y-4 relative mb-6">
             <form onSubmit={handleSubmit} className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600/20 to-blue-600/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative">
-                <div className="absolute left-3 top-4 text-purple-400 z-10">
-                  <Wand2 className="w-5 h-5" />
+                <div className="absolute left-3 top-4 text-green-400 z-10">
+                  <TrendingUp className="w-5 h-5" />
                 </div>
                 <textarea
                   ref={textareaRef}
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
+                  value={upgradePrompt}
+                  onChange={(e) => setUpgradePrompt(e.target.value)}
                   onKeyDown={handleKeyDown}
                   onFocus={handleFocus}
                   placeholder={getPlaceholderText()}
-                  disabled={demoMode || isLoading}
-                  className={`w-full pl-12 pr-12 py-3.5 border border-purple-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm resize-none leading-6 ${
-                    demoMode || isLoading
+                  disabled={isLoading}
+                  className={`w-full pl-12 pr-12 py-3.5 border border-green-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm resize-none leading-6 ${
+                    isLoading
                       ? 'bg-gray-800/30 cursor-not-allowed placeholder-gray-400 italic' 
                       : 'bg-gray-800/50 placeholder-gray-400'
                   }`}
@@ -297,8 +310,8 @@ export function RegenerateCharacterModal({
                 <button
                   type="submit"
                   disabled={isSubmitDisabled() || isLoading}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md bg-gradient-to-r from-purple-600 to-pink-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:from-purple-500 hover:to-pink-500 transition-all duration-200 shadow-lg hover:shadow-purple-500/25 z-10"
-                  title={demoMode ? "Generate Demo Character" : "Submit (Ctrl/Cmd + Enter)"}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md bg-gradient-to-r from-green-600 to-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:from-green-500 hover:to-blue-500 transition-all duration-200 shadow-lg hover:shadow-green-500/25 z-10"
+                  title={demoMode ? "Upgrade Demo Character" : "Submit (Ctrl/Cmd + Enter)"}
                 >
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -308,11 +321,11 @@ export function RegenerateCharacterModal({
                 </button>
               </div>
 
-              {/* Suggestion Popup - Only show in regular mode */}
+              {/* Upgrade Suggestion Popup - Only show in regular mode */}
               {!demoMode && (
-                <SuggestionPopup
+                <UpgradeSuggestionPopup
                   isVisible={showSuggestions && isFocused}
-                  currentText={prompt}
+                  currentText={upgradePrompt}
                   onSuggestionClick={handleSuggestionClick}
                   onClose={handleCloseSuggestions}
                 />
@@ -320,10 +333,33 @@ export function RegenerateCharacterModal({
             </form>
           </div>
 
-          {/* Example Prompts - Only show in regular mode */}
-          {!demoMode && (
-            <ExamplePrompts onPromptSelect={handlePromptSelect} />
-          )}
+          {/* Example Upgrades */}
+          <div>
+            <h4 className="text-lg font-semibold text-white mb-4 text-center flex items-center justify-center gap-2">
+              <Sparkles className="w-5 h-5 text-green-400" />
+              Example Upgrades
+            </h4>
+            <div className="space-y-2">
+              {exampleUpgrades.map((example, index) => (
+                <button
+                  key={`example-${index}`}
+                  onClick={() => handleExampleClick(example)}
+                  disabled={isLoading}
+                  className="w-full text-left p-3 bg-gray-800/30 hover:bg-green-900/20 border border-gray-700/50 hover:border-green-500/30 rounded-lg transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-2 flex-shrink-0 group-hover:bg-green-300 transition-colors" />
+                    <p className="text-sm text-green-300 group-hover:text-green-200 transition-colors leading-relaxed">
+                      {example}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-green-400/70 mt-3 text-center">
+              Click any example to use it, or create your own upgrade description
+            </p>
+          </div>
         </div>
 
         {/* Footer */}
@@ -338,12 +374,12 @@ export function RegenerateCharacterModal({
           <button
             onClick={handleSubmit}
             disabled={isSubmitDisabled() || isLoading}
-            className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-purple-500/25"
+            className="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-500 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-green-500/25"
           >
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Generating...</span>
+                <span>Upgrading...</span>
               </div>
             ) : (
               getButtonText()

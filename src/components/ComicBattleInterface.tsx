@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronUp, ChevronDown, Wand2, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronUp, ChevronDown, Wand2, RotateCcw, ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
 import { useGame } from '../context/GameContext';
 import { CharacterPortrait } from './ui/CharacterPortrait';
 import { ComicPanel } from './ui/ComicPanel';
@@ -7,7 +7,7 @@ import { ActionButton } from './ui/ActionButton';
 import { CustomSceneInput } from './ui/CustomSceneInput';
 import { FinalizeButton } from './ui/FinalizeButton';
 import { RestartModal } from './ui/RestartModal';
-import { RegenerateCharacterModal } from './ui/RegenerateCharacterModal';
+import { UpgradeCharacterModal } from './ui/UpgradeCharacterModal';
 import { ReplaceActionModal } from './ui/ReplaceActionModal';
 import { FinalizeBattleModal } from './ui/FinalizeBattleModal';
 import { PostBattleControls } from './ui/PostBattleControls';
@@ -46,8 +46,8 @@ export function ComicBattleInterface() {
   const [suggestedActions, setSuggestedActions] = useState<Array<{ label: string; description: string }>>([]);
   const [isControlsExpanded, setIsControlsExpanded] = useState(true);
   const [showRestartModal, setShowRestartModal] = useState(false);
-  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
-  const [regenerateTarget, setRegenerateTarget] = useState<'hero' | 'villain' | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeTarget, setUpgradeTarget] = useState<'hero' | 'villain' | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
   const [replaceModalTarget, setReplaceModalTarget] = useState<{ index: number; isVillainAction: boolean } | null>(null);
@@ -481,28 +481,28 @@ export function ComicBattleInterface() {
     dispatch({ type: 'RESET_GAME' });
   };
 
-  const handleRegenerateCharacter = (target: 'hero' | 'villain') => {
-    setRegenerateTarget(target);
-    setShowRegenerateModal(true);
+  const handleUpgradeCharacter = (target: 'hero' | 'villain') => {
+    setUpgradeTarget(target);
+    setShowUpgradeModal(true);
   };
 
-  const handleCharacterRegenerated = (newCharacter: any) => {
-    if (regenerateTarget === 'hero') {
-      dispatch({ type: 'SET_CHARACTER', payload: newCharacter });
+  const handleCharacterUpgraded = (upgradedCharacter: any) => {
+    if (upgradeTarget === 'hero') {
+      dispatch({ type: 'SET_CHARACTER', payload: upgradedCharacter });
       // Reset suggested actions with new character's powers
-      if (newCharacter.powers) {
-        const newActions = newCharacter.powers.slice(0, 3).map((power: any) => ({
+      if (upgradedCharacter.powers) {
+        const newActions = upgradedCharacter.powers.slice(0, 3).map((power: any) => ({
           label: power.name,
           description: power.description
         }));
         setSuggestedActions(newActions);
       }
-    } else if (regenerateTarget === 'villain') {
-      dispatch({ type: 'SET_OPPONENT', payload: newCharacter });
+    } else if (upgradeTarget === 'villain') {
+      dispatch({ type: 'SET_OPPONENT', payload: upgradedCharacter });
     }
     
-    setShowRegenerateModal(false);
-    setRegenerateTarget(null);
+    setShowUpgradeModal(false);
+    setUpgradeTarget(null);
   };
 
   const handleRetryImageGeneration = async () => {
@@ -600,13 +600,13 @@ export function ComicBattleInterface() {
               {character.description}
             </p>
             
-            {/* Regenerate Hero Button */}
+            {/* Upgrade Hero Button */}
             <button
-              onClick={() => handleRegenerateCharacter('hero')}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 hover:from-purple-600/30 hover:to-pink-600/30 border border-purple-500/30 hover:border-purple-400/50 text-purple-300 hover:text-purple-200 rounded-lg transition-all duration-200 font-medium"
+              onClick={() => handleUpgradeCharacter('hero')}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600/20 to-blue-600/20 hover:from-green-600/30 hover:to-blue-600/30 border border-green-500/30 hover:border-green-400/50 text-green-300 hover:text-green-200 rounded-lg transition-all duration-200 font-medium"
             >
-              <RotateCcw className="w-4 h-4" />
-              Regenerate
+              <TrendingUp className="w-4 h-4" />
+              Upgrade
             </button>
           </div>
         </div>
@@ -851,13 +851,13 @@ export function ComicBattleInterface() {
               {opponent.description}
             </p>
             
-            {/* Regenerate Villain Button */}
+            {/* Upgrade Villain Button */}
             <button
-              onClick={() => handleRegenerateCharacter('villain')}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600/20 to-orange-600/20 hover:from-red-600/30 hover:to-orange-600/30 border border-red-500/30 hover:border-red-400/50 text-red-300 hover:text-red-200 rounded-lg transition-all duration-200 font-medium"
+              onClick={() => handleUpgradeCharacter('villain')}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600/20 to-blue-600/20 hover:from-green-600/30 hover:to-blue-600/30 border border-green-500/30 hover:border-green-400/50 text-green-300 hover:text-green-200 rounded-lg transition-all duration-200 font-medium"
             >
-              <RotateCcw className="w-4 h-4" />
-              Regenerate
+              <TrendingUp className="w-4 h-4" />
+              Upgrade
             </button>
           </div>
         </div>
@@ -878,15 +878,16 @@ export function ComicBattleInterface() {
         onConfirm={handleRestartComic}
       />
 
-      {/* Regenerate Character Modal */}
-      <RegenerateCharacterModal
-        isOpen={showRegenerateModal}
+      {/* Upgrade Character Modal */}
+      <UpgradeCharacterModal
+        isOpen={showUpgradeModal}
         onClose={() => {
-          setShowRegenerateModal(false);
-          setRegenerateTarget(null);
+          setShowUpgradeModal(false);
+          setUpgradeTarget(null);
         }}
-        onCharacterGenerated={handleCharacterRegenerated}
-        targetType={regenerateTarget}
+        onCharacterUpgraded={handleCharacterUpgraded}
+        targetType={upgradeTarget}
+        currentCharacter={upgradeTarget === 'hero' ? character : opponent}
         demoMode={demoMode}
       />
 
