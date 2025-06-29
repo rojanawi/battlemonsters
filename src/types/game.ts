@@ -44,6 +44,7 @@ export interface GameState {
   selectedPower?: number;
   isGeneratingImage: boolean;
   imageGenerationError: boolean;
+  demoMode: boolean;
   isGeneratingActions: boolean;
 }
 
@@ -56,6 +57,8 @@ export type GameAction =
   | { type: 'SET_CHARACTER_IMAGE'; payload: string }
   | { type: 'SET_GENERATING_IMAGE'; payload: boolean }
   | { type: 'SET_IMAGE_GENERATION_ERROR'; payload: boolean }
+  | { type: 'TOGGLE_DEMO_MODE'; payload: boolean }
+  | { type: 'RESET_GAME' }
   | { type: 'SET_CHARACTER_ACTIONS'; payload: BattleAction[] }
   | { type: 'SET_GENERATING_ACTIONS'; payload: boolean };
 

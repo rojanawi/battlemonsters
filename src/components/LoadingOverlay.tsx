@@ -6,10 +6,13 @@ export function LoadingOverlay() {
   const { state } = useGame();
   
   const getLoadingMessage = () => {
-    if (state.isGeneratingImage) {
-      return 'Generating character image...';
+    if (state.demoMode) {
+      return "Preparing demo battle...";
     }
-    return 'Creating your character...';
+    if (state.isGeneratingImage) {
+      return "Generating character image...";
+    }
+    return "Generating your character...";
   };
 
   return (
