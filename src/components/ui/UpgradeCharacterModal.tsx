@@ -22,6 +22,7 @@ export function UpgradeCharacterModal({
 }: UpgradeCharacterModalProps) {
   const [upgradePrompt, setUpgradePrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -36,6 +37,7 @@ export function UpgradeCharacterModal({
       setUpgradePrompt('');
       setError(null);
       setIsLoading(false);
+      setIsGeneratingImage(false);
       setIsFocused(false);
       setShowSuggestions(false);
       // Generate example upgrades
@@ -86,6 +88,45 @@ export function UpgradeCharacterModal({
     }
   };
 
+  const generateUpgradedImage = async (upgradedCharacter: any) => {
+    try {
+      setIsGeneratingImage(true);
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/character-image`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt: upgradedCharacter.image_prompt }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to generate upgraded character image');
+      }
+
+      const data = await response.json();
+      
+      // Update character with new image URL
+      const characterWithImage = {
+        ...upgradedCharacter,
+        image_url: data.url
+      };
+      
+      setIsGeneratingImage(false);
+      return characterWithImage;
+      
+    } catch (error) {
+      console.error('Failed to generate upgraded character image:', error);
+      setIsGeneratingImage(false);
+      
+      // Still return the character even if image generation fails
+      return upgradedCharacter;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -93,18 +134,22 @@ export function UpgradeCharacterModal({
     if (demoMode) {
       setIsLoading(true);
       
-      setTimeout(() => {
+      setTimeout(async () => {
         // Create an upgraded version of the current character for demo
         const upgradedCharacter = {
           ...currentCharacter,
           character_name: `Enhanced ${currentCharacter.character_name}`,
           description: `${currentCharacter.description} Now ${upgradePrompt || 'enhanced with mystical upgrades'}.`,
+          image_prompt: `${currentCharacter.image_prompt}, ${upgradePrompt || 'enhanced with mystical upgrades'}, upgraded appearance, more powerful looking, enhanced details`,
           hp: Math.min(currentCharacter.hp + 20, 200),
           energy: Math.min(currentCharacter.energy + 15, 150),
           mana: Math.min(currentCharacter.mana + 10, 120),
         };
         
-        onCharacterUpgraded(upgradedCharacter);
+        // Generate new image for demo character
+        const characterWithImage = await generateUpgradedImage(upgradedCharacter);
+        
+        onCharacterUpgraded(characterWithImage);
         setIsLoading(false);
       }, 1500);
       
@@ -124,7 +169,9 @@ export function UpgradeCharacterModal({
 
 Upgrade instructions: ${upgradePrompt.trim()}
 
-Keep the core identity and personality of the character, but enhance them with the requested upgrades. Maintain their existing powers but make them stronger or add complementary abilities. The character should feel like an evolved version of themselves.`;
+Keep the core identity and personality of the character, but enhance them with the requested upgrades. Maintain their existing powers but make them stronger or add complementary abilities. The character should feel like an evolved version of themselves.
+
+IMPORTANT: Update the image_prompt to reflect the upgrades - add the upgrade details to the visual description while keeping the core character appearance recognizable.`;
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/character-creation`,
@@ -143,12 +190,19 @@ Keep the core identity and personality of the character, but enhance them with t
       }
 
       const upgradedCharacter = await response.json();
-      onCharacterUpgraded(upgradedCharacter);
+      
+      // Set character creation loading to false
+      setIsLoading(false);
+      
+      // Now generate the upgraded character image
+      const characterWithImage = await generateUpgradedImage(upgradedCharacter);
+      
+      onCharacterUpgraded(characterWithImage);
       setUpgradePrompt('');
     } catch (error: any) {
       setError(error.message);
-    } finally {
       setIsLoading(false);
+      setIsGeneratingImage(false);
     }
   };
 
@@ -207,12 +261,24 @@ Keep the core identity and personality of the character, but enhance them with t
     return `Describe how to upgrade ${currentCharacter?.character_name || 'this character'}...`;
   };
 
+  const getLoadingMessage = () => {
+    if (isGeneratingImage) {
+      return 'Generating upgraded image...';
+    }
+    if (isLoading) {
+      return 'Upgrading character...';
+    }
+    return '';
+  };
+
   const isSubmitDisabled = () => {
     if (demoMode) {
       return false;
     }
     return !upgradePrompt.trim();
   };
+
+  const isProcessing = isLoading || isGeneratingImage;
 
   if (!isOpen) return null;
 
@@ -233,7 +299,8 @@ Keep the core identity and personality of the character, but enhance them with t
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-800 rounded-lg transition-colors"
+            disabled={isProcessing}
+            className="p-1 hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X className="w-5 h-5 text-gray-400 hover:text-white" />
           </button>
@@ -249,7 +316,7 @@ Keep the core identity and personality of the character, but enhance them with t
               Enhance <strong>{currentCharacter?.character_name || 'your character'}</strong> with new abilities and features
             </p>
             <p className="text-purple-300 text-sm">
-              The upgraded character will keep their core identity while gaining new powers
+              The upgraded character will keep their core identity while gaining new powers and appearance
             </p>
           </div>
 
@@ -263,11 +330,23 @@ Keep the core identity and personality of the character, but enhance them with t
             </div>
           )}
 
+          {/* Loading Status */}
+          {isProcessing && (
+            <div className="mb-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
+                <p className="text-blue-300 text-sm">
+                  {getLoadingMessage()}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Demo Mode Indicator */}
           {demoMode && (
             <div className="mb-6 p-3 bg-purple-900/20 border border-purple-500/30 rounded-lg">
               <p className="text-sm text-purple-300 text-center">
-                <strong>Demo Mode Active:</strong> Will create an enhanced version of the current character
+                <strong>Demo Mode Active:</strong> Will create an enhanced version with new image
               </p>
             </div>
           )}
@@ -295,9 +374,9 @@ Keep the core identity and personality of the character, but enhance them with t
                   onKeyDown={handleKeyDown}
                   onFocus={handleFocus}
                   placeholder={getPlaceholderText()}
-                  disabled={isLoading}
+                  disabled={isProcessing}
                   className={`w-full pl-12 pr-12 py-3.5 border border-green-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm resize-none leading-6 ${
-                    isLoading
+                    isProcessing
                       ? 'bg-gray-800/30 cursor-not-allowed placeholder-gray-400 italic' 
                       : 'bg-gray-800/50 placeholder-gray-400'
                   }`}
@@ -309,11 +388,11 @@ Keep the core identity and personality of the character, but enhance them with t
                 />
                 <button
                   type="submit"
-                  disabled={isSubmitDisabled() || isLoading}
+                  disabled={isSubmitDisabled() || isProcessing}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md bg-gradient-to-r from-green-600 to-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:from-green-500 hover:to-blue-500 transition-all duration-200 shadow-lg hover:shadow-green-500/25 z-10"
                   title={demoMode ? "Upgrade Demo Character" : "Submit (Ctrl/Cmd + Enter)"}
                 >
-                  {isLoading ? (
+                  {isProcessing ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <Send className="w-4 h-4" />
@@ -324,7 +403,7 @@ Keep the core identity and personality of the character, but enhance them with t
               {/* Upgrade Suggestion Popup - Only show in regular mode */}
               {!demoMode && (
                 <UpgradeSuggestionPopup
-                  isVisible={showSuggestions && isFocused}
+                  isVisible={showSuggestions && isFocused && !isProcessing}
                   currentText={upgradePrompt}
                   onSuggestionClick={handleSuggestionClick}
                   onClose={handleCloseSuggestions}
@@ -334,52 +413,54 @@ Keep the core identity and personality of the character, but enhance them with t
           </div>
 
           {/* Example Upgrades */}
-          <div>
-            <h4 className="text-lg font-semibold text-white mb-4 text-center flex items-center justify-center gap-2">
-              <Sparkles className="w-5 h-5 text-green-400" />
-              Example Upgrades
-            </h4>
-            <div className="space-y-2">
-              {exampleUpgrades.map((example, index) => (
-                <button
-                  key={`example-${index}`}
-                  onClick={() => handleExampleClick(example)}
-                  disabled={isLoading}
-                  className="w-full text-left p-3 bg-gray-800/30 hover:bg-green-900/20 border border-gray-700/50 hover:border-green-500/30 rounded-lg transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-2 flex-shrink-0 group-hover:bg-green-300 transition-colors" />
-                    <p className="text-sm text-green-300 group-hover:text-green-200 transition-colors leading-relaxed">
-                      {example}
-                    </p>
-                  </div>
-                </button>
-              ))}
+          {!isProcessing && (
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4 text-center flex items-center justify-center gap-2">
+                <Sparkles className="w-5 h-5 text-green-400" />
+                Example Upgrades
+              </h4>
+              <div className="space-y-2">
+                {exampleUpgrades.map((example, index) => (
+                  <button
+                    key={`example-${index}`}
+                    onClick={() => handleExampleClick(example)}
+                    disabled={isProcessing}
+                    className="w-full text-left p-3 bg-gray-800/30 hover:bg-green-900/20 border border-gray-700/50 hover:border-green-500/30 rounded-lg transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-2 flex-shrink-0 group-hover:bg-green-300 transition-colors" />
+                      <p className="text-sm text-green-300 group-hover:text-green-200 transition-colors leading-relaxed">
+                        {example}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-green-400/70 mt-3 text-center">
+                Click any example to use it, or create your own upgrade description
+              </p>
             </div>
-            <p className="text-xs text-green-400/70 mt-3 text-center">
-              Click any example to use it, or create your own upgrade description
-            </p>
-          </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="flex gap-3 p-6 border-t border-purple-500/20">
           <button
             onClick={onClose}
-            disabled={isLoading}
+            disabled={isProcessing}
             className="flex-1 px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            disabled={isSubmitDisabled() || isLoading}
+            disabled={isSubmitDisabled() || isProcessing}
             className="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-500 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-green-500/25"
           >
-            {isLoading ? (
+            {isProcessing ? (
               <div className="flex items-center justify-center gap-2">
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Upgrading...</span>
+                <span>{isGeneratingImage ? 'Generating Image...' : 'Upgrading...'}</span>
               </div>
             ) : (
               getButtonText()
