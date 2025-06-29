@@ -9,21 +9,21 @@ export const SHADOW_REAPER: Opponent = {
   powers: [
     {
       name: "Soul Drain",
-      description: "Drains life force from the enemy while restoring own HP",
+      description: "Shadow Reaper extends spectral tendrils that pierce through the enemy's defenses, siphoning their life force while dark energy flows back to restore the reaper's own vitality",
       energy_cost: 25,
       cooldown: 4,
       damage_range: "20-35"
     },
     {
       name: "Shadow Strike",
-      description: "A swift attack from the shadows that ignores armor",
+      description: "Shadow Reaper melts into the darkness and materializes behind the enemy, delivering a swift strike with void-touched claws that bypasses all armor and shields",
       energy_cost: 20,
       cooldown: 3,
       damage_range: "15-30"
     },
     {
       name: "Void Blast",
-      description: "Unleashes a devastating blast of dark energy",
+      description: "Shadow Reaper channels the raw power of the void realm, unleashing a devastating explosion of dark energy that tears through reality itself to devastate the battlefield",
       energy_cost: 40,
       cooldown: 6,
       damage_range: "35-50"
@@ -42,21 +42,21 @@ export const CRYSTAL_GOLEM: Opponent = {
   powers: [
     {
       name: "Crystal Spear",
-      description: "Launches razor-sharp crystal projectiles at high velocity",
+      description: "Crystal Golem raises its massive arm and launches razor-sharp crystalline projectiles at incredible velocity, each shard gleaming with magical energy as they pierce through the air",
       energy_cost: 20,
       cooldown: 3,
       damage_range: "18-28"
     },
     {
       name: "Earthquake Slam",
-      description: "Pounds the ground creating devastating shockwaves",
+      description: "Crystal Golem pounds the ground with tremendous force, causing the earth to crack and split as devastating shockwaves ripple outward, destabilizing everything in their path",
       energy_cost: 35,
       cooldown: 5,
       damage_range: "25-40"
     },
     {
       name: "Crystal Barrier",
-      description: "Creates protective crystal shields while dealing damage",
+      description: "Crystal Golem summons protective crystalline shields that erupt from the ground while simultaneously launching crystal fragments at enemies, creating both defense and offense",
       energy_cost: 30,
       cooldown: 4,
       damage_range: "15-25"
@@ -75,21 +75,21 @@ export const FLAME_PHOENIX: Opponent = {
   powers: [
     {
       name: "Inferno Wing",
-      description: "Sweeps wings to create walls of searing flame",
+      description: "Flame Phoenix spreads its magnificent wings wide and sweeps them forward, creating towering walls of searing flame that engulf the battlefield in a blazing inferno",
       energy_cost: 25,
       cooldown: 3,
       damage_range: "22-32"
     },
     {
       name: "Phoenix Dive",
-      description: "Dives from above wreathed in flames for massive damage",
+      description: "Flame Phoenix soars high into the sky before diving down like a meteor, its entire body wreathed in intense flames as it crashes into enemies with devastating impact",
       energy_cost: 40,
       cooldown: 6,
       damage_range: "30-45"
     },
     {
       name: "Solar Flare",
-      description: "Unleashes blinding solar energy in all directions",
+      description: "Flame Phoenix channels the power of the sun itself, unleashing a blinding burst of solar energy that radiates outward in all directions, scorching everything within reach",
       energy_cost: 35,
       cooldown: 5,
       damage_range: "25-38"
@@ -108,21 +108,21 @@ export const ICE_WITCH: Opponent = {
   powers: [
     {
       name: "Frost Bolt",
-      description: "Hurls piercing shards of magical ice",
+      description: "Ice Witch conjures and hurls piercing shards of magical ice that streak through the air like frozen lightning, each bolt crackling with arctic energy",
       energy_cost: 20,
       cooldown: 2,
       damage_range: "16-26"
     },
     {
       name: "Blizzard Storm",
-      description: "Summons a devastating ice storm over the battlefield",
+      description: "Ice Witch raises her staff to the sky and summons a devastating ice storm that engulfs the entire battlefield, with howling winds and razor-sharp ice shards tearing through everything",
       energy_cost: 45,
       cooldown: 7,
       damage_range: "35-50"
     },
     {
       name: "Ice Prison",
-      description: "Traps enemy in ice while dealing continuous damage",
+      description: "Ice Witch gestures toward her enemy and encases them in a prison of solid ice, the frozen tomb continuously draining their warmth and dealing ongoing damage",
       energy_cost: 30,
       cooldown: 4,
       damage_range: "20-30"
@@ -141,21 +141,21 @@ export const STORM_DRAGON: Opponent = {
   powers: [
     {
       name: "Lightning Breath",
-      description: "Breathes forth crackling bolts of pure electricity",
+      description: "Storm Dragon opens its massive jaws and breathes forth crackling bolts of pure electricity that arc and dance through the air, striking with the fury of a thunderstorm",
       energy_cost: 30,
       cooldown: 4,
       damage_range: "25-35"
     },
     {
       name: "Thunder Roar",
-      description: "Deafening roar that creates shockwaves of sound",
+      description: "Storm Dragon unleashes a deafening roar that creates powerful shockwaves of sound, the thunderous bellow reverberating across the battlefield and stunning all who hear it",
       energy_cost: 25,
       cooldown: 3,
       damage_range: "20-30"
     },
     {
       name: "Storm Call",
-      description: "Summons a massive lightning storm from the heavens",
+      description: "Storm Dragon spreads its wings and calls upon the heavens, summoning a massive lightning storm that rains down bolts of electricity from the sky in a spectacular display of draconic power",
       energy_cost: 50,
       cooldown: 8,
       damage_range: "40-55"
@@ -174,21 +174,21 @@ export const VOID_ASSASSIN: Opponent = {
   powers: [
     {
       name: "Shadow Step",
-      description: "Teleports through shadows to strike with poisoned blades",
+      description: "Void Assassin dissolves into shadows and teleports through the darkness, materializing behind the enemy to strike with twin poisoned blades dripping with void essence",
       energy_cost: 25,
       cooldown: 3,
       damage_range: "20-30"
     },
     {
       name: "Void Slash",
-      description: "Cuts through reality itself with dimensional blade",
+      description: "Void Assassin draws a blade that cuts through the fabric of reality itself, creating dimensional rifts that slice through space and time to reach the enemy",
       energy_cost: 35,
       cooldown: 5,
       damage_range: "28-42"
     },
     {
       name: "Dark Mirage",
-      description: "Creates shadow clones that attack simultaneously",
+      description: "Void Assassin creates multiple shadow clones that emerge from the darkness, each duplicate attacking simultaneously in a coordinated assault that overwhelms the enemy's defenses",
       energy_cost: 40,
       cooldown: 6,
       damage_range: "30-45"
