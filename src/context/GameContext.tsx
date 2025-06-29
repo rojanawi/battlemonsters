@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer } from 'react';
-import type { GameState, GameAction, Character, Opponent, BattleAction } from '../types/game';
+import type { GameState, GameAction, Character, Opponent } from '../types/game';
 
 const initialState: GameState = {
   character: null,
@@ -8,6 +8,7 @@ const initialState: GameState = {
   error: null,
   isGeneratingImage: false,
   imageGenerationError: false,
+  demoMode: false,
   isGeneratingActions: false,
 };
 
@@ -36,6 +37,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, isGeneratingImage: action.payload };
     case 'SET_IMAGE_GENERATION_ERROR':
       return { ...state, imageGenerationError: action.payload };
+    case 'TOGGLE_DEMO_MODE':
+      return { ...state, demoMode: action.payload };
+    case 'RESET_GAME':
+      return { 
+        ...initialState, 
+        demoMode: state.demoMode // Preserve demo mode setting
+      };
     case 'SET_CHARACTER_ACTIONS':
       return state.character
         ? { ...state, character: { ...state.character, current_actions: action.payload } }
