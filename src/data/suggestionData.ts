@@ -1,5 +1,5 @@
 // Character suggestion data organized by categories with focus on physical characteristics, weapons, and accessories
-export const CHARACTER_TYPES = [
+const CHARACTER_TYPES = [
   // Fantasy Warriors
   'Phoenix warrior', 'Crystal mage', 'Shadow hunter', 'Storm knight', 'Void assassin',
   'Ice queen', 'Fire demon', 'Lightning monk', 'Earth titan', 'Wind dancer',

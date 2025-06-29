@@ -1,6 +1,6 @@
 import type { Opponent } from '../types/game';
 
-export const SHADOW_REAPER: Opponent = {
+const SHADOW_REAPER: Opponent = {
   character_name: "Shadow Reaper",
   description: "A dark entity from the void realm, wielding ancient necromantic powers and feeding on the life force of its enemies.",
   hp: 120,
@@ -33,7 +33,7 @@ export const SHADOW_REAPER: Opponent = {
   image_prompt: "Dark hooded figure wreathed in shadows and purple energy, skeletal hands with glowing claws, tattered black robes flowing in supernatural wind, glowing red eyes piercing through darkness, necromantic aura, void energy swirling around, menacing presence, dark fantasy villain, gothic horror aesthetic"
 };
 
-export const CRYSTAL_GOLEM: Opponent = {
+const CRYSTAL_GOLEM: Opponent = {
   character_name: "Crystal Golem",
   description: "An ancient construct made of living crystal, powered by elemental magic and nearly indestructible armor plating.",
   hp: 150,
@@ -66,7 +66,7 @@ export const CRYSTAL_GOLEM: Opponent = {
   image_prompt: "Massive crystalline golem with translucent blue-white crystal body, glowing magical runes carved into crystal surface, towering humanoid form made of living gemstone, prismatic light refracting through crystal limbs, ancient magical construct, elemental earth magic, imposing stone guardian, fantasy creature"
 };
 
-export const FLAME_PHOENIX: Opponent = {
+const FLAME_PHOENIX: Opponent = {
   character_name: "Flame Phoenix",
   description: "A majestic fire bird reborn from eternal flames, wielding devastating fire magic and the power of resurrection.",
   hp: 110,
@@ -99,7 +99,7 @@ export const FLAME_PHOENIX: Opponent = {
   image_prompt: "Magnificent phoenix with brilliant orange and red flame feathers, wings spread wide with fire trailing behind, golden beak and talons, eyes like burning embers, surrounded by swirling flames and sparks, majestic fire bird, mythical creature, elemental fire magic, rebirth symbolism"
 };
 
-export const ICE_WITCH: Opponent = {
+const ICE_WITCH: Opponent = {
   character_name: "Ice Witch",
   description: "A sorceress of the frozen wastes, master of ice magic and winter storms, with a heart as cold as her spells.",
   hp: 95,
@@ -132,7 +132,7 @@ export const ICE_WITCH: Opponent = {
   image_prompt: "Elegant ice witch with pale blue skin and white hair, wearing flowing robes made of ice crystals, staff topped with frozen gem, surrounded by swirling snow and ice magic, piercing blue eyes, frost patterns on clothing, winter sorceress, magical ice powers, frozen beauty"
 };
 
-export const STORM_DRAGON: Opponent = {
+const STORM_DRAGON: Opponent = {
   character_name: "Storm Dragon",
   description: "An ancient dragon lord of the skies, commanding lightning and thunder with devastating aerial attacks.",
   hp: 140,
@@ -165,7 +165,7 @@ export const STORM_DRAGON: Opponent = {
   image_prompt: "Massive storm dragon with blue-silver scales crackling with electricity, wings spread wide with lightning arcing between them, glowing yellow eyes, sharp claws and teeth, surrounded by storm clouds and lightning bolts, ancient dragon, elemental lightning magic, sky lord, tempest creature"
 };
 
-export const VOID_ASSASSIN: Opponent = {
+const VOID_ASSASSIN: Opponent = {
   character_name: "Void Assassin",
   description: "A master of stealth and shadow magic, striking from the darkness with lethal precision and otherworldly speed.",
   hp: 85,
@@ -199,7 +199,7 @@ export const VOID_ASSASSIN: Opponent = {
 };
 
 // Array of all available opponents
-export const ALL_OPPONENTS = [
+const ALL_OPPONENTS = [
   SHADOW_REAPER,
   CRYSTAL_GOLEM,
   FLAME_PHOENIX,
@@ -215,10 +215,10 @@ export function getRandomOpponent(): Opponent {
 }
 
 // Export the random opponent as the default opponent
-export const FIXED_OPPONENT = getRandomOpponent();
+const FIXED_OPPONENT = getRandomOpponent();
 
 // Legacy exports for backward compatibility
-export const OPPONENTS = {
+const OPPONENTS = {
   SHADOW_REAPER,
   CRYSTAL_GOLEM,
   FLAME_PHOENIX,

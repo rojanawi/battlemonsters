@@ -1,5 +1,5 @@
 // Character prompt generation data
-export const CHARACTER_ARCHETYPES = [
+const CHARACTER_ARCHETYPES = [
   'Cyber samurai', 'Ancient dragon mage', 'Shadow assassin', 'Crystal golem', 'Storm witch',
   'Void knight', 'Phoenix warrior', 'Ice queen', 'Lightning monk', 'Dark necromancer',
   'Celestial guardian', 'Demon hunter', 'Arcane scholar', 'Battle android', 'Mystic shaman',
@@ -8,7 +8,7 @@ export const CHARACTER_ARCHETYPES = [
   'Quantum hacker', 'Bio-engineer', 'Psionic warrior', 'Ethereal ghost', 'Primal beast'
 ];
 
-export const MAGICAL_ABILITIES = [
+const MAGICAL_ABILITIES = [
   'lightning fists', 'time magic', 'shadow manipulation', 'crystal armor', 'storm control',
   'void powers', 'flame wings', 'ice shards', 'thunder strikes', 'dark energy',
   'celestial light', 'demon summoning', 'arcane missiles', 'nano-tech', 'spirit animals',
@@ -17,7 +17,7 @@ export const MAGICAL_ABILITIES = [
   'quantum tunneling', 'genetic morphing', 'mind control', 'phase shifting', 'primal roars'
 ];
 
-export const UNIQUE_TRAITS = [
+const UNIQUE_TRAITS = [
   'who can melt into darkness', 'with eyes that see through time', 'whose touch freezes enemies',
   'that phases between dimensions', 'who commands the weather', 'with unbreakable crystal skin',
   'that burns with eternal flames', 'who speaks to the dead', 'with mechanical limbs',
@@ -30,7 +30,7 @@ export const UNIQUE_TRAITS = [
   'that walks through walls', 'who bends reality', 'with infinite stamina'
 ];
 
-export const VISUAL_STYLES = [
+const VISUAL_STYLES = [
   'cyberpunk aesthetic', 'ancient mystical robes', 'sleek modern armor', 'tribal war paint',
   'glowing tattoos', 'mechanical augmentations', 'ethereal translucent form', 'battle scars',
   'ornate jewelry', 'flowing cape', 'spiked armor', 'elegant silk garments',
@@ -42,7 +42,7 @@ export const VISUAL_STYLES = [
 ];
 
 // Function to generate a random character prompt
-export function generateRandomPrompt(): string {
+function generateRandomPrompt(): string {
   const archetype = CHARACTER_ARCHETYPES[Math.floor(Math.random() * CHARACTER_ARCHETYPES.length)];
   const ability = MAGICAL_ABILITIES[Math.floor(Math.random() * MAGICAL_ABILITIES.length)];
   const trait = UNIQUE_TRAITS[Math.floor(Math.random() * UNIQUE_TRAITS.length)];

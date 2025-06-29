@@ -1,4 +1,4 @@
-export interface Power {
+interface Power {
   name: string;
   description: string;
   energy_cost: number;
@@ -6,7 +6,7 @@ export interface Power {
   damage_range: string;
 }
 
-export interface BattleAction {
+interface BattleAction {
   name: string;
   description: string;
   attack_points: number;
@@ -62,5 +62,4 @@ export type GameAction =
   | { type: 'SET_CHARACTER_ACTIONS'; payload: BattleAction[] }
   | { type: 'SET_GENERATING_ACTIONS'; payload: boolean };
 
-// Re-export combat types for compatibility
-export type { CombatAction, CombatState, CombatPhase, CombatResolution } from './combat';
+// Re-export combat types for compatibility;

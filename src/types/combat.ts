@@ -1,4 +1,4 @@
-export interface CombatAction {
+interface CombatAction {
   id: string;
   name: string;
   description: string;
@@ -16,7 +16,7 @@ export interface CombatAction {
   };
 }
 
-export interface CombatPhase {
+interface CombatPhase {
   phase: 'player_initiative' | 'opponent_initiative';
   turn_number: number;
   initiator: 'player' | 'opponent';
@@ -26,7 +26,7 @@ export interface CombatPhase {
   status: 'declaring' | 'reacting' | 'resolving' | 'completed';
 }
 
-export interface CombatResolution {
+interface CombatResolution {
   initiator_damage_dealt: number;
   reactor_damage_dealt: number;
   initiator_damage_taken: number;
@@ -36,7 +36,7 @@ export interface CombatResolution {
   description: string;
 }
 
-export interface CombatState {
+interface CombatState {
   current_phase: CombatPhase;
   player_hp: number;
   opponent_hp: number;
@@ -57,16 +57,16 @@ export interface CombatState {
   is_generating_actions?: boolean;
 }
 
-export type CombatActionType = 'attack' | 'defend' | 'special' | 'counter' | 'character_trait' | 'funny' | 'reactive' | 'custom_input';
+type CombatActionType = 'attack' | 'defend' | 'special' | 'counter' | 'character_trait' | 'funny' | 'reactive' | 'custom_input';
 
-export interface ActionEffectiveness {
+interface ActionEffectiveness {
   damage_multiplier: number;
   description: string;
   is_effective: boolean;
 }
 
 // Re-export for compatibility with existing game types
-export interface Character {
+interface Character {
   character_name: string;
   description: string;
   hp: number;
@@ -89,7 +89,7 @@ export interface Character {
   }>;
 }
 
-export interface Opponent {
+interface Opponent {
   character_name: string;
   description: string;
   hp: number;
